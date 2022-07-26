@@ -34,3 +34,10 @@ jobs:
         run: |
             cd smart-contracts
             yarn test test/base/*.* || yarn test test/base/*.*
+      - name: Run Slither
+        uses: crytic/slither-action@main
+        id: slither
+        with:
+          target: 'smart-contracts/contracts'
+          slither-args: '--exclude assembly,low-level-calls,external-function'
+
