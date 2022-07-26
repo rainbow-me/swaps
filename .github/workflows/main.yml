@@ -38,6 +38,6 @@ jobs:
         uses: crytic/slither-action@main
         id: slither
         with:
-          target: 'smart-contracts/contracts'
-          slither-args: '--exclude assembly,low-level-calls,external-function'
+          target: 'smart-contracts'
+          slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp'
 
