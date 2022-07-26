@@ -2,7 +2,7 @@
 name: CI
 
 env:
-  node-version: lts/*
+  node-version: 16.16.0
 
 on:
   push:
