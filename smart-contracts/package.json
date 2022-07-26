@@ -1,0 +1,37 @@
+{
+  "dependencies": {
+    "@openzeppelin/contracts": "4.4.2",
+    "@rari-capital/solmate": "^6.2.0",
+    "@uniswap/v3-periphery": "^1.4.0",
+    "eth-sig-util": "^3.0.1",
+    "ethereumjs-util": "^6.2.0",
+    "hardhat": "^2.9.1",
+    "hardhat-tracer": "^1.0.0-alpha.6",
+    "node-fetch": "^2.6.7"
+  },
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat --network localhost  run scripts/deploy.ts",
+    "lint": "eslint . --ext js,ts,jsx,tsx && prettier --list-different 'contracts/**/*.sol'",
+    "prettier-sol": "prettier --write 'contracts/**/*.sol'",
+    "test": "npx hardhat test"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "@nomiclabs/hardhat-etherscan": "^2.1.7",
+    "@nomiclabs/hardhat-waffle": "^2.0.0",
+    "@types/chai": "^4.2.22",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.11.0",
+    "chai": "^4.3.4",
+    "eslint": "^7.32.0",
+    "eslint-config-rainbow": "^2.0.1",
+    "ethereum-waffle": "^3.0.0",
+    "ethers": "^5.0.0",
+    "hardhat-gas-reporter": "^1.0.6",
+    "prettier": "^2.4.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.18",
+    "ts-node": "^10.3.0",
+    "typescript": "^4.4.4"
+  }
+}

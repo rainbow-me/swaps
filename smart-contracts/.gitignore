@@ -1,0 +1,7 @@
+node_modules
+.env
+.openzeppelin
+
+#Hardhat files
+cache
+artifacts

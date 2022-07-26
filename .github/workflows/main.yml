@@ -1,0 +1,37 @@
+---
+name: CI
+
+env:
+  node-version: lts/*
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    env:
+      MAINNET_RPC_ENDPOINT: ${{ secrets.MAINNET_RPC_ENDPOINT }}
+      COINMARKETCAP_API_KEY: ${{ secrets.COINMARKETCAP_API_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.node-version }}
+          cache: yarn
+          cache-dependency-path: smart-contracts/yarn.lock
+      - name: Smart contracts setup
+        run: |
+          cd smart-contracts
+          yarn install
+          yarn compile
+          yarn lint
+      - name: run smart-contracts base tests
+        run: |
+            cd smart-contracts
+            yarn test test/base/*.* || yarn test test/base/*.*
