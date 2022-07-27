@@ -2,7 +2,7 @@
 name: CI
 
 env:
-  node-version: lts/*
+  node-version: 16.16.0
 
 on:
   push:
@@ -34,3 +34,11 @@ jobs:
         run: |
             cd smart-contracts
             yarn test test/base/*.* || yarn test test/base/*.*
+      - name: Run Slither
+        uses: crytic/slither-action@main
+        id: slither
+        with:
+          node-version: ${{ env.node-version }}
+          target: 'smart-contracts'
+          slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp'
+
