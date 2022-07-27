@@ -1,3 +1,5 @@
+![Rainbow Swaps Image](gh.png)
+
 # 🌈  Rainbow Swaps 
 
 ## Modules
