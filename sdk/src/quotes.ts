@@ -1,3 +1,4 @@
+import { BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
@@ -5,10 +6,15 @@ import { Wallet } from '@ethersproject/wallet';
 import RainbowRouterABI from './abi/RainbowRouter.json';
 import {
   ChainId,
+  CrosschainQuote,
+  CrosschainQuoteExecutionDetails,
+  EthereumAddress,
   Quote,
   QuoteError,
   QuoteExecutionDetails,
   QuoteParams,
+  Source,
+  SwapType,
   TransactionOptions,
 } from './types';
 import {
@@ -22,6 +28,111 @@ import {
 import { signPermit } from '.';
 
 /**
+ * Function to get a swap formatted quote url to use with backend
+ *
+ * @param {ChainId} params.chainId
+ * @param {EthereumAddress} params.sellTokenAddress
+ * @param {EthereumAddress} params.buyTokenAddress
+ * @param {BigNumberish} params.buyAmount
+ * @param {BigNumberish} params.sellAmount
+ * @param {EthereumAddress} params.fromAddress
+ * @param {string} params.source
+ * @param {number} params.feePercentageBasisPoints
+ * @param {number} params.slippage
+ * @returns {string}
+ */
+const buildRainbowQuoteUrl = ({
+  chainId,
+  sellTokenAddress,
+  buyTokenAddress,
+  buyAmount,
+  sellAmount,
+  fromAddress,
+  source,
+  feePercentageBasisPoints,
+  slippage,
+}: {
+  chainId: number;
+  toChainId?: number;
+  sellTokenAddress: EthereumAddress;
+  buyTokenAddress: EthereumAddress;
+  buyAmount?: BigNumberish;
+  sellAmount?: BigNumberish;
+  fromAddress: EthereumAddress;
+  feePercentageBasisPoints?: number;
+  source?: Source;
+  slippage: number;
+}) => {
+  const searchParams = new URLSearchParams({
+    buyToken: buyTokenAddress,
+    chainId: String(chainId),
+    fromAddress,
+    sellToken: sellTokenAddress,
+    slippage: String(slippage),
+    swapType: SwapType.normal,
+    ...(source ? { source } : {}),
+    ...(sellAmount
+      ? { sellAmount: String(sellAmount) }
+      : { buyAmount: String(buyAmount) }),
+    // When buying ETH, we need to tell the aggregator
+    // to return the funds to the contract if we need to take a fee
+    ...(buyTokenAddress === ETH_ADDRESS
+      ? { destReceiver: RAINBOW_ROUTER_CONTRACT_ADDRESS }
+      : {}),
+    ...(feePercentageBasisPoints !== undefined
+      ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
+      : {}),
+  });
+  return API_BASE_URL + '/quote?' + searchParams.toString();
+};
+
+/**
+ * Function to get a crosschain swap formatted quote url to use with backend
+ *
+ * @param {ChainId} params.chainId
+ * @param {ChainId} params.toChainId
+ * @param {EthereumAddress} params.sellTokenAddress
+ * @param {EthereumAddress} params.buyTokenAddress
+ * @param {BigNumberish} params.sellAmount
+ * @param {EthereumAddress} params.fromAddress
+ * @param {number} params.slippage
+ * @param {boolean} params.refuel
+ * @returns {string}
+ */
+const buildRainbowCrosschainQuoteUrl = ({
+  chainId,
+  toChainId,
+  sellTokenAddress,
+  buyTokenAddress,
+  sellAmount,
+  fromAddress,
+  slippage,
+  refuel,
+}: {
+  chainId: number;
+  toChainId?: number;
+  sellTokenAddress: EthereumAddress;
+  buyTokenAddress: EthereumAddress;
+  sellAmount?: BigNumberish;
+  fromAddress: EthereumAddress;
+  slippage: number;
+  refuel?: boolean;
+}) => {
+  const searchParams = new URLSearchParams({
+    buyToken: buyTokenAddress,
+    chainId: String(chainId),
+    fromAddress,
+    refuel: String(refuel),
+    sellAmount: String(sellAmount),
+    sellToken: sellTokenAddress,
+    slippage: String(slippage),
+    swapType: SwapType.crossChain,
+    toChainId: String(toChainId),
+  });
+  return API_BASE_URL + '/quote?' + searchParams.toString();
+};
+
+/**
  * Function to get a quote from rainbow's swap aggregator backend
  *
  * @param {QuoteParams} params
@@ -33,6 +144,7 @@ import { signPermit } from '.';
  * @param {BigNumberish} params.sellAmount
  * @param {BigNumberish} params.buyAmount
  * @param {number} params.slippage
+ * @param {number} params.feePercentageBasisPoints
  * @returns {Promise<Quote | null>}
  */
 export const getQuote = async (
@@ -47,6 +159,7 @@ export const getQuote = async (
     sellAmount,
     buyAmount,
     slippage,
+    feePercentageBasisPoints,
   } = params;
   // When wrapping or unwrapping ETH, the quote is always 1:1
   // so we don't need to call our backend.
@@ -77,30 +190,21 @@ export const getQuote = async (
     } as Quote;
   }
 
-  let url = `${API_BASE_URL}/quote?chainId=${chainId}&fromAddress=${fromAddress}&buyToken=${buyTokenAddress}&sellToken=${sellTokenAddress}&slippage=${slippage}`;
-  if (source) {
-    url += `&source=${source}`;
-  }
-  if (sellAmount) {
-    url += `&sellAmount=${sellAmount}`;
-  } else if (buyAmount) {
-    url += `&buyAmount=${buyAmount}`;
-  }
   if (isNaN(Number(sellAmount)) && isNaN(Number(buyAmount))) {
     return null;
   }
 
-  // When buying ETH, we need to tell the aggregator
-  // to return the funds to the contract if we need to take a fee
-  if (buyTokenAddress === ETH_ADDRESS) {
-    url += `&destReceiver=${RAINBOW_ROUTER_CONTRACT_ADDRESS}`;
-  }
-
-  // @ts-ignore
-  if (params.feePercentageBasisPoints !== undefined) {
-    // @ts-ignore
-    url += `&feePercentageBasisPoints=${params.feePercentageBasisPoints}`;
-  }
+  const url = buildRainbowQuoteUrl({
+    buyAmount,
+    buyTokenAddress,
+    chainId,
+    feePercentageBasisPoints,
+    fromAddress,
+    sellAmount,
+    sellTokenAddress,
+    slippage,
+    source,
+  });
 
   const response = await fetch(url);
   const quote = await response.json();
@@ -108,6 +212,57 @@ export const getQuote = async (
     return quote as QuoteError;
   }
   return quote as Quote;
+};
+
+/**
+ * Function to get a crosschain swap quote from rainbow's swap aggregator backend
+ *
+ * @param {QuoteParams} params
+ * @param {ChainId} params.chainId
+ * @param {ChainId} params.toChainId
+ * @param {EthereumAddress} params.fromAddress
+ * @param {EthereumAddress} params.sellTokenAddress
+ * @param {EthereumAddress} params.buyTokenAddress
+ * @param {BigNumberish} params.sellAmount
+ * @param {number} params.slippage
+ * @param {boolean} params.refuel
+ * @returns {Promise<CrosschainQuote | null>}
+ */
+export const getCrosschainQuote = async (
+  params: QuoteParams
+): Promise<CrosschainQuote | QuoteError | null> => {
+  const {
+    chainId = ChainId.mainnet,
+    toChainId,
+    fromAddress,
+    sellTokenAddress,
+    buyTokenAddress,
+    sellAmount,
+    slippage,
+    refuel = false,
+  } = params;
+
+  if (!sellAmount || !toChainId) {
+    return null;
+  }
+
+  const url = buildRainbowCrosschainQuoteUrl({
+    buyTokenAddress,
+    chainId,
+    fromAddress,
+    refuel,
+    sellAmount,
+    sellTokenAddress,
+    slippage,
+    toChainId,
+  });
+
+  const response = await fetch(url);
+  const quote = await response.json();
+  if (quote.error) {
+    return quote as QuoteError;
+  }
+  return quote as CrosschainQuote;
 };
 
 const calculateDeadline = async (wallet: Wallet) => {
@@ -243,6 +398,33 @@ export const fillQuote = async (
   return swapTx;
 };
 
+/**
+ * Function that fills a crosschain swap quote onchain via rainbow's swap aggregator smart contract
+ *
+ * @param {CrosschainQuote} quote
+ * @param {TransactionOptions} transactionOptions
+ * @param {Wallet} wallet
+ * @returns {Promise<Transaction>}
+ */
+export const fillCrosschainQuote = async (
+  quote: CrosschainQuote,
+  transactionOptions: TransactionOptions,
+  wallet: Wallet
+): Promise<Transaction> => {
+  const { to, data, from, value } = quote;
+  const swapTx = await wallet.sendTransaction({
+    data,
+    from,
+    to,
+    ...{
+      ...transactionOptions,
+      value,
+    },
+  });
+
+  return swapTx;
+};
+
 export const getQuoteExecutionDetails = (
   quote: Quote,
   transactionOptions: TransactionOptions,
@@ -314,4 +496,24 @@ export const getQuoteExecutionDetails = (
       router: instance,
     };
   }
+};
+
+export const getCrosschainQuoteExecutionDetails = (
+  quote: CrosschainQuote,
+  transactionOptions: TransactionOptions,
+  provider: StaticJsonRpcProvider
+): CrosschainQuoteExecutionDetails => {
+  const { to, from, data, value } = quote;
+  return {
+    method: provider.estimateGas({
+      data,
+      from,
+      to,
+      value,
+    }),
+    params: {
+      ...transactionOptions,
+      value,
+    },
+  };
 };
