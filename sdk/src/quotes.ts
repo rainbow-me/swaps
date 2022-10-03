@@ -24,7 +24,6 @@ import {
   MAX_INT,
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
-  SOCKET_BASE_URL,
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from '.';
@@ -146,7 +145,7 @@ const getMinRefuelAmount = async (params: {
   toChainId: ChainId;
 }): Promise<BigNumberish | null> => {
   const { chainId, toChainId } = params;
-  const url = `${SOCKET_BASE_URL}/chains`;
+  const url = `${API_BASE_URL}/chains`;
   const response = await fetch(url);
   const chainsData = (await response.json()) as SocketChainsData;
 
