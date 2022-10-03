@@ -13,6 +13,7 @@ import {
   QuoteError,
   QuoteExecutionDetails,
   QuoteParams,
+  SocketChainsData,
   Source,
   SwapType,
   TransactionOptions,
@@ -23,6 +24,7 @@ import {
   MAX_INT,
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
+  SOCKET_BASE_URL,
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from '.';
@@ -130,6 +132,37 @@ const buildRainbowCrosschainQuoteUrl = ({
     toChainId: String(toChainId),
   });
   return API_BASE_URL + '/quote?' + searchParams.toString();
+};
+
+/**
+ * Function to get a minimum amount of source chain gas token to perform a refuel swap
+ *
+ * @param {ChainId} params.chainId
+ * @param {ChainId} params.toChainId
+ * @returns {string}
+ */
+const getMinRefuelAmount = async (params: {
+  chainId: ChainId;
+  toChainId: ChainId;
+}): Promise<BigNumberish | null> => {
+  const { chainId, toChainId } = params;
+  const url = `${SOCKET_BASE_URL}/chains`;
+  const response = await fetch(url);
+  const chainsData = (await response.json()) as SocketChainsData;
+
+  const sourceChain = chainsData.result.find((c) => c.chainId === chainId);
+
+  if (!sourceChain) return null;
+
+  const destinationChain = sourceChain.limits.find(
+    (c) => c.chainId === toChainId
+  );
+
+  if (!destinationChain) return null;
+
+  // We multiply the min amount by 2 as that is what is required according to sockets docs
+  // Ref: https://docs.socket.tech/socket-api/v2/guides/refuel-integration#refuel-as-a-middleware
+  return BigNumber.from(destinationChain.minAmount).mul(2).toString();
 };
 
 /**
@@ -246,6 +279,8 @@ export const getCrosschainQuote = async (
     return null;
   }
 
+  const minRefuelAmount = await getMinRefuelAmount({ chainId, toChainId });
+
   const url = buildRainbowCrosschainQuoteUrl({
     buyTokenAddress,
     chainId,
@@ -262,7 +297,7 @@ export const getCrosschainQuote = async (
   if (quote.error) {
     return quote as QuoteError;
   }
-  return quote as CrosschainQuote;
+  return { ...quote, minRefuelAmount } as CrosschainQuote;
 };
 
 const calculateDeadline = async (wallet: Wallet) => {
