@@ -4,6 +4,8 @@ export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 export const API_BASE_URL = 'https://swap.p.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
+export const SOCKET_REGISTRY_CONTRACT_ADDRESSESS =
+  '0xc30141B657f4216252dc59Af2e7CdB9D8792e1B0';
 
 export type MultiChainAsset = {
   [key: string]: EthereumAddress;

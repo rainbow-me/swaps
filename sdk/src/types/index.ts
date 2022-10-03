@@ -17,6 +17,11 @@ export enum Source {
   Aggregotor1inch = '1inch',
 }
 
+export enum SwapType {
+  normal = 'normal',
+  crossChain = 'cross-chain',
+}
+
 export type EthereumAddress = string;
 
 export interface QuoteParams {
@@ -29,6 +34,10 @@ export interface QuoteParams {
   buyAmount?: BigNumberish;
   slippage: number;
   destReceiver?: EthereumAddress;
+  refuel?: boolean;
+  swapType: SwapType;
+  feePercentageBasisPoints?: number;
+  toChainId?: number;
 }
 
 export interface ProtocolShare {
@@ -59,6 +68,121 @@ export interface Quote {
   inputTokenDecimals?: number;
   outputTokenDecimals?: number;
   defaultGasLimit?: string;
+  swapType?: string;
+}
+
+interface SocketGasFees {
+  gasAmount: BigNumberish;
+  gasLimit: string;
+  asset: SocketAsset;
+  feesInUsd: number;
+}
+
+interface SocketProtocol {
+  name: string;
+  displayName: string;
+  icon: string;
+  securityScore: number;
+  robustnessScore: number;
+}
+interface SocketProtocolFees {
+  amount: BigNumberish;
+  asset: SocketAsset;
+  feesInUsd: number;
+}
+
+interface SocketRoute {
+  chainGasBalances: {
+    [chainId: string]: {
+      minGasBalance: string;
+      hasGasBalance: boolean;
+    };
+  };
+  routeId: string;
+  isOnlySwapRoute: boolean;
+  fromAmount: BigNumberish;
+  toAmount: BigNumberish;
+  usedBridgeNames: string[];
+  minimumGasBalances: {
+    [chaind: string]: BigNumberish;
+  };
+  totalUserTx: number;
+  sender: EthereumAddress;
+  recipient: EthereumAddress;
+  totalGasFeesInUsd: BigNumberish;
+  userTxs: {
+    userTxType: string;
+    txType: string;
+    chainId: number;
+    toAmount: BigNumberish;
+    toAsset: SocketAsset;
+    stepCount: number;
+    routePath: string;
+    sender: EthereumAddress;
+    approvalData: {
+      minimumApprovalAmount: number;
+      approvalTokenAddress: EthereumAddress;
+      allowanceTarget: EthereumAddress;
+      owner: EthereumAddress;
+    } | null;
+    steps: {
+      type: string;
+      protocol: SocketProtocol;
+      fromChainId: number;
+      fromAsset: SocketAsset;
+      fromAmount: BigNumberish;
+      toChainId: number;
+      toAsset: SocketAsset;
+      toAmount: BigNumberish;
+      minAmountOut: BigNumberish;
+      bridgeSlippage: number;
+      protocolFees: SocketProtocolFees;
+      gasFees: SocketGasFees;
+      serviceTime: number;
+      maxServiceTime: number;
+    }[];
+    gasFees: SocketGasFees;
+    serviceTime: number;
+    maxServiceTime: number;
+    recipient: EthereumAddress;
+    bridgeSlippage: number;
+    userTxIndex: number;
+  }[];
+  serviceTime: number;
+  maxServiceTime: number;
+}
+
+interface SocketRefuelData {
+  fromAmount: string;
+  toAmount: string;
+  gasFees: SocketGasFees;
+  recipient: EthereumAddress;
+  serviceTime: number;
+  fromAsset: SocketAsset;
+  toAsset: SocketAsset;
+  fromChainId: number;
+  toChainId: number;
+}
+
+interface SocketAsset {
+  address: EthereumAddress;
+  chainAgnosticId: number | null;
+  chainId: number;
+  decimals: number;
+  icon: string;
+  logoURI: string;
+  name: string;
+  symbol: string;
+}
+
+export interface CrosschainQuote extends Quote {
+  fromAsset: SocketAsset;
+  fromChainId: number;
+  toAsset: SocketAsset;
+  toChainId: number;
+  allowanceTarget?: string;
+  routes: SocketRoute[];
+  refuel: SocketRefuelData | null;
 }
 
 export interface TransactionOptions {
@@ -76,4 +200,9 @@ export interface QuoteExecutionDetails {
   params: TransactionOptions;
   methodName: string;
   router: Contract;
+}
+
+export interface CrosschainQuoteExecutionDetails {
+  method: any;
+  params: TransactionOptions;
 }
