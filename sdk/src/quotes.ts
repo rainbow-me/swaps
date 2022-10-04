@@ -1,4 +1,4 @@
-import { BigNumberish } from '@ethersproject/bignumber';
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
@@ -13,6 +13,7 @@ import {
   QuoteError,
   QuoteExecutionDetails,
   QuoteParams,
+  SocketChainsData,
   Source,
   SwapType,
   TransactionOptions,
@@ -130,6 +131,37 @@ const buildRainbowCrosschainQuoteUrl = ({
     toChainId: String(toChainId),
   });
   return API_BASE_URL + '/quote?' + searchParams.toString();
+};
+
+/**
+ * Function to get a minimum amount of source chain gas token to perform a refuel swap
+ *
+ * @param {ChainId} params.chainId
+ * @param {ChainId} params.toChainId
+ * @returns {string}
+ */
+export const getMinRefuelAmount = async (params: {
+  chainId: ChainId;
+  toChainId: ChainId;
+}): Promise<BigNumberish | null> => {
+  const { chainId, toChainId } = params;
+  const url = `${API_BASE_URL}/chains`;
+  const response = await fetch(url);
+  const chainsData = (await response.json()) as SocketChainsData;
+
+  const sourceChain = chainsData.result.find((c) => c.chainId === chainId);
+
+  if (!sourceChain) return null;
+
+  const destinationChain = sourceChain.limits.find(
+    (c) => c.chainId === toChainId
+  );
+
+  if (!destinationChain) return null;
+
+  // We multiply the min amount by 2 as that is what is required according to sockets docs
+  // Ref: https://docs.socket.tech/socket-api/v2/guides/refuel-integration#refuel-as-a-middleware
+  return BigNumber.from(destinationChain.minAmount).mul(2).toString();
 };
 
 /**

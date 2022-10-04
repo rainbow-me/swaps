@@ -175,6 +175,28 @@ interface SocketAsset {
   symbol: string;
 }
 
+export interface SocketChainsData {
+  success: boolean;
+  result: {
+    _id: string;
+    name: string;
+    chainId: ChainId;
+    icon: string;
+    isSendingEnabled: boolean;
+    isReceivingEnabled: boolean;
+    blockExplorer: string;
+    nativeAsset: string;
+    limits: {
+      chainId: ChainId;
+      isEnabled: boolean;
+      minAmount: BigNumberish;
+      maxAmount: BigNumberish;
+    }[];
+    gasLimit: BigNumberish;
+    __v: number;
+  }[];
+}
+
 export interface CrosschainQuote extends Quote {
   fromAsset: SocketAsset;
   fromChainId: number;
