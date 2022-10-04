@@ -1,4 +1,4 @@
-import { BigNumberish } from '@ethersproject/bignumber';
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
@@ -140,7 +140,7 @@ const buildRainbowCrosschainQuoteUrl = ({
  * @param {ChainId} params.toChainId
  * @returns {string}
  */
-const getMinRefuelAmount = async (params: {
+export const getMinRefuelAmount = async (params: {
   chainId: ChainId;
   toChainId: ChainId;
 }): Promise<BigNumberish | null> => {
@@ -278,8 +278,6 @@ export const getCrosschainQuote = async (
     return null;
   }
 
-  const minRefuelAmount = await getMinRefuelAmount({ chainId, toChainId });
-
   const url = buildRainbowCrosschainQuoteUrl({
     buyTokenAddress,
     chainId,
@@ -296,7 +294,7 @@ export const getCrosschainQuote = async (
   if (quote.error) {
     return quote as QuoteError;
   }
-  return { ...quote, minRefuelAmount } as CrosschainQuote;
+  return quote as CrosschainQuote;
 };
 
 const calculateDeadline = async (wallet: Wallet) => {
