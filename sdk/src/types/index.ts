@@ -205,7 +205,6 @@ export interface CrosschainQuote extends Quote {
   allowanceTarget?: string;
   routes: SocketRoute[];
   refuel: SocketRefuelData | null;
-  minRefuelAmount: string;
 }
 
 export interface TransactionOptions {
