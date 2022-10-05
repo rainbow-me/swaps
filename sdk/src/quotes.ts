@@ -84,7 +84,7 @@ const buildRainbowQuoteUrl = ({
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
   });
-  return API_BASE_URL + '/quote?' + searchParams.toString();
+  return `${API_BASE_URL}/v1/quote?` + searchParams.toString();
 };
 
 /**
@@ -130,7 +130,7 @@ const buildRainbowCrosschainQuoteUrl = ({
     swapType: SwapType.crossChain,
     toChainId: String(toChainId),
   });
-  return API_BASE_URL + '/quote?' + searchParams.toString();
+  return `${API_BASE_URL}/v1/quote?` + searchParams.toString();
 };
 
 /**
@@ -145,7 +145,7 @@ export const getMinRefuelAmount = async (params: {
   toChainId: ChainId;
 }): Promise<BigNumberish | null> => {
   const { chainId, toChainId } = params;
-  const url = `${API_BASE_URL}/chains`;
+  const url = `${API_BASE_URL}/v1/chains`;
   const response = await fetch(url);
   const chainsData = (await response.json()) as SocketChainsData;
 
