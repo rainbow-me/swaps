@@ -144,7 +144,7 @@ const buildRainbowCrosschainQuoteUrl = ({
 export const getMinRefuelAmount = async (params: {
   chainId: ChainId;
   toChainId: ChainId;
-}): Promise<BigNumberish | null> => {
+}) => {
   const { chainId, toChainId } = params;
   const url = `${API_BASE_URL}/v1/chains`;
   const response = await fetch(url);
