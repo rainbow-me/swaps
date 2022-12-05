@@ -1,8 +1,8 @@
+import { Signer } from '@ethersproject/abstract-signer';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
-import { Signer } from 'ethers';
 import RainbowRouterABI from './abi/RainbowRouter.json';
 import {
   ChainId,
@@ -27,6 +27,7 @@ import {
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from '.';
+import { Wallet } from '@ethersproject/wallet';
 
 /**
  * Function to get a swap formatted quote url to use with backend
@@ -297,7 +298,7 @@ export const getCrosschainQuote = async (
   return quote as CrosschainQuote;
 };
 
-const calculateDeadline = async (wallet: Signer) => {
+const calculateDeadline = async (wallet: Wallet) => {
   const { timestamp } = await wallet.provider.getBlock('latest');
   return timestamp + PERMIT_EXPIRATION_TS;
 };
@@ -352,9 +353,9 @@ export const fillQuote = async (
     );
   } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
     if (permit) {
-      const deadline = await calculateDeadline(wallet);
+      const deadline = await calculateDeadline(wallet as Wallet);
       const permitSignature = await signPermit(
-        wallet,
+        wallet as Wallet,
         sellTokenAddress,
         quote.from,
         instance.address,
@@ -389,9 +390,9 @@ export const fillQuote = async (
     }
   } else {
     if (permit) {
-      const deadline = await calculateDeadline(wallet);
+      const deadline = await calculateDeadline(wallet as Wallet);
       const permitSignature = await signPermit(
-        wallet,
+        wallet as Wallet,
         sellTokenAddress,
         quote.from,
         instance.address,

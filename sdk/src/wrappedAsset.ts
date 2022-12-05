@@ -1,8 +1,8 @@
+import { Signer } from '@ethersproject/abstract-signer';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
-import { Signer } from 'ethers';
 import { default as WethAbi } from './abi/Weth.json';
 import { WRAPPED_ASSET } from './utils/constants';
 import { ChainId, TransactionOptions } from '.';
@@ -58,7 +58,7 @@ export const unwrapNativeAsset = async (
  * Function that returns a pointer to the smart contract
  * function that wraps or unwraps, to be used by estimateGas calls
  * @param {string} name
- * @param {StaticJsonRpcProvider} provider]
+ * @param {StaticJsonRpcProvider} provider
  * @returns {Promise<Transaction>}
  */
 export const getWrappedAssetMethod = (
