@@ -2,7 +2,7 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
-import { Wallet } from '@ethersproject/wallet';
+import { Signer } from 'ethers';
 import RainbowRouterABI from './abi/RainbowRouter.json';
 import {
   ChainId,
@@ -297,7 +297,7 @@ export const getCrosschainQuote = async (
   return quote as CrosschainQuote;
 };
 
-const calculateDeadline = async (wallet: Wallet) => {
+const calculateDeadline = async (wallet: Signer) => {
   const { timestamp } = await wallet.provider.getBlock('latest');
   return timestamp + PERMIT_EXPIRATION_TS;
 };
@@ -307,7 +307,7 @@ const calculateDeadline = async (wallet: Wallet) => {
  *
  * @param {Quote} quote
  * @param {TransactionOptions} transactionOptions
- * @param {Wallet} wallet
+ * @param {Signer} wallet
  * @param {boolean} permit
  * @param {number} ChainId
  * @returns {Promise<Transaction>}
@@ -315,7 +315,7 @@ const calculateDeadline = async (wallet: Wallet) => {
 export const fillQuote = async (
   quote: Quote,
   transactionOptions: TransactionOptions,
-  wallet: Wallet,
+  wallet: Signer,
   permit: boolean,
   chainId: ChainId
 ): Promise<Transaction> => {
@@ -435,13 +435,13 @@ export const fillQuote = async (
  *
  * @param {CrosschainQuote} quote
  * @param {TransactionOptions} transactionOptions
- * @param {Wallet} wallet
+ * @param {Signer} wallet
  * @returns {Promise<Transaction>}
  */
 export const fillCrosschainQuote = async (
   quote: CrosschainQuote,
   transactionOptions: TransactionOptions,
-  wallet: Wallet
+  wallet: Signer
 ): Promise<Transaction> => {
   const { to, data, from, value } = quote;
   const swapTx = await wallet.sendTransaction({

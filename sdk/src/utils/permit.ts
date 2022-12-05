@@ -1,7 +1,7 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { splitSignature } from '@ethersproject/bytes';
 import { Contract } from '@ethersproject/contracts';
-import { Wallet } from '@ethersproject/wallet';
+import { Signer } from 'ethers';
 import {
   signTypedData,
   SignTypedDataVersion,
@@ -130,7 +130,7 @@ const PERMIT_ALLOWED_TYPE = [
 ];
 
 export async function signPermit(
-  wallet: Wallet,
+  wallet: Signer,
   tokenAddress: EthereumAddress,
   owner: EthereumAddress,
   spender: EthereumAddress,
