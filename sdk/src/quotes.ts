@@ -3,6 +3,7 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
+import { Wallet } from '@ethersproject/wallet';
 import RainbowRouterABI from './abi/RainbowRouter.json';
 import {
   ChainId,
@@ -27,7 +28,6 @@ import {
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from '.';
-import { Wallet } from '@ethersproject/wallet';
 
 /**
  * Function to get a swap formatted quote url to use with backend
