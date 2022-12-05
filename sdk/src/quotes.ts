@@ -1,3 +1,4 @@
+import { Signer } from '@ethersproject/abstract-signer';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
@@ -307,7 +308,7 @@ const calculateDeadline = async (wallet: Wallet) => {
  *
  * @param {Quote} quote
  * @param {TransactionOptions} transactionOptions
- * @param {Wallet} wallet
+ * @param {Signer} wallet
  * @param {boolean} permit
  * @param {number} ChainId
  * @returns {Promise<Transaction>}
@@ -315,7 +316,7 @@ const calculateDeadline = async (wallet: Wallet) => {
 export const fillQuote = async (
   quote: Quote,
   transactionOptions: TransactionOptions,
-  wallet: Wallet,
+  wallet: Signer,
   permit: boolean,
   chainId: ChainId
 ): Promise<Transaction> => {
@@ -352,9 +353,9 @@ export const fillQuote = async (
     );
   } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
     if (permit) {
-      const deadline = await calculateDeadline(wallet);
+      const deadline = await calculateDeadline(wallet as Wallet);
       const permitSignature = await signPermit(
-        wallet,
+        wallet as Wallet,
         sellTokenAddress,
         quote.from,
         instance.address,
@@ -389,9 +390,9 @@ export const fillQuote = async (
     }
   } else {
     if (permit) {
-      const deadline = await calculateDeadline(wallet);
+      const deadline = await calculateDeadline(wallet as Wallet);
       const permitSignature = await signPermit(
-        wallet,
+        wallet as Wallet,
         sellTokenAddress,
         quote.from,
         instance.address,
@@ -435,13 +436,13 @@ export const fillQuote = async (
  *
  * @param {CrosschainQuote} quote
  * @param {TransactionOptions} transactionOptions
- * @param {Wallet} wallet
+ * @param {Signer} wallet
  * @returns {Promise<Transaction>}
  */
 export const fillCrosschainQuote = async (
   quote: CrosschainQuote,
   transactionOptions: TransactionOptions,
-  wallet: Wallet
+  wallet: Signer
 ): Promise<Transaction> => {
   const { to, data, from, value } = quote;
   const swapTx = await wallet.sendTransaction({
