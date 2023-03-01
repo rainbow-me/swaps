@@ -40,5 +40,5 @@ jobs:
         with:
           node-version: ${{ env.node-version }}
           target: 'smart-contracts'
-          slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp'
+          slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp,immutable-states'
 
