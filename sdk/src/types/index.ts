@@ -58,10 +58,12 @@ export interface Quote {
   data?: string;
   value?: BigNumberish;
   sellAmount: BigNumberish;
+  sellAmountInEth: BigNumberish;
   sellAmountMinusFees: BigNumberish;
   sellTokenAddress: EthereumAddress;
   buyTokenAddress: EthereumAddress;
   buyAmount: BigNumberish;
+  buyAmountInEth: BigNumberish;
   fee: BigNumberish;
   feePercentageBasisPoints: number;
   protocols?: ProtocolShare[];
