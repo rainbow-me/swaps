@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@openzeppelin/contracts": "4.4.2",
+    "@openzeppelin/contracts": "4.8.3",
     "@rari-capital/solmate": "^6.2.0",
     "@uniswap/v3-periphery": "^1.4.0",
     "eth-sig-util": "^3.0.1",
