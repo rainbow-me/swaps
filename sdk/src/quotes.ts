@@ -25,6 +25,7 @@ import {
   MAX_INT,
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
+  SOCKET_REGISTRY_CONTRACT_ADDRESSESS,
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from '.';
@@ -295,7 +296,12 @@ export const getCrosschainQuote = async (
   if (quote.error) {
     return quote as QuoteError;
   }
-  return quote as CrosschainQuote;
+
+  const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
+  quoteWithRestrictedAllowanceTarget.allowanceTarget =
+    SOCKET_REGISTRY_CONTRACT_ADDRESSESS.get(chainId);
+
+  return quoteWithRestrictedAllowanceTarget;
 };
 
 const calculateDeadline = async (wallet: Wallet) => {
@@ -444,7 +450,9 @@ export const fillCrosschainQuote = async (
   transactionOptions: TransactionOptions,
   wallet: Signer
 ): Promise<Transaction> => {
-  const { to, data, from, value } = quote;
+  const { data, from, value } = quote;
+  const to = SOCKET_REGISTRY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
+
   const swapTx = await wallet.sendTransaction({
     data,
     from,
@@ -536,7 +544,9 @@ export const getCrosschainQuoteExecutionDetails = (
   transactionOptions: TransactionOptions,
   provider: StaticJsonRpcProvider
 ): CrosschainQuoteExecutionDetails => {
-  const { to, from, data, value } = quote;
+  const { from, data, value } = quote;
+  const to = SOCKET_REGISTRY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
+
   return {
     method: provider.estimateGas({
       data,
