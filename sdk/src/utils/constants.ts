@@ -4,8 +4,15 @@ export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 export const API_BASE_URL = 'https://swap.p.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
-export const SOCKET_REGISTRY_CONTRACT_ADDRESSESS =
-  '0xc30141B657f4216252dc59Af2e7CdB9D8792e1B0';
+
+// SOCKET_REGISTRY_CONTRACT_ADDRESSES is mapped by int chain ID to avoid a breaking change
+export const SOCKET_REGISTRY_CONTRACT_ADDRESSESS = new Map([
+  [1, '0x5e2361cd711de7efe2a85045b643271a64262d40'],
+  [10, '0xE00D67F732E6ED1158553fDBE9C6a151d06bed6c'],
+  [137, '0xc9b6f5eeabb099bbbfb130b78249e81f70efc946'],
+  [42161, '0x8b14984de0ddd2e080d8679febe2f5c94b975af8'],
+  [56, '0x3EC389511AF4AF02C9F3723C0fdEB105d1cC5A9C'],
+]);
 
 export type MultiChainAsset = {
   [key: string]: EthereumAddress;
