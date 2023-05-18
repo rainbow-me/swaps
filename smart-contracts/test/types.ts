@@ -52,11 +52,14 @@ export interface Quote {
   value?: BigNumberish;
   allowanceTarget?: EthereumAddress;
   sellAmount: BigNumberish;
+  sellAmountDisplay: BigNumberish;
   sellAmountMinusFees: BigNumberish;
   sellTokenAddress: EthereumAddress;
   buyTokenAddress: EthereumAddress;
   buyAmount: BigNumberish;
+  buyAmountDisplay: BigNumberish;
   fee: BigNumberish;
+  feeInEth: BigNumberish;
   feePercentageBasisPoints: number;
   protocols?: ProtocolShare[];
   inputTokenDecimals?: number;
