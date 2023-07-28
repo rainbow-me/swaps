@@ -8,6 +8,7 @@ export enum ChainId {
   goerli = 5,
   rinkeby = 4,
   optimism = 10,
+  bsc = 56,
   polygon = 137,
   arbitrum = 42161,
   zora = 7777777,
