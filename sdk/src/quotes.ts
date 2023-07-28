@@ -132,7 +132,7 @@ const buildRainbowCrosschainQuoteUrl = ({
     swapType: SwapType.crossChain,
     toChainId: String(toChainId),
   });
-  return `${API_BASE_URL}/v1/quote?` + searchParams.toString();
+  return `${API_BASE_URL}/v1/quote?bridgeVersion=2&` + searchParams.toString();
 };
 
 /**

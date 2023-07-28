@@ -7,11 +7,13 @@ export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
 
 // SOCKET_REGISTRY_CONTRACT_ADDRESSES is mapped by int chain ID to avoid a breaking change
 export const SOCKET_REGISTRY_CONTRACT_ADDRESSESS = new Map([
-  [1, '0x5e2361cd711de7efe2a85045b643271a64262d40'],
-  [10, '0xE00D67F732E6ED1158553fDBE9C6a151d06bed6c'],
-  [137, '0xc9b6f5eeabb099bbbfb130b78249e81f70efc946'],
-  [42161, '0x8b14984de0ddd2e080d8679febe2f5c94b975af8'],
-  [56, '0x3EC389511AF4AF02C9F3723C0fdEB105d1cC5A9C'],
+  [ChainId.mainnet, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
+  [ChainId.optimism, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
+  [ChainId.polygon, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
+  [ChainId.arbitrum, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
+  [ChainId.bsc, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
+  [ChainId.zora, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
+  [ChainId.base, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
 ]);
 
 export type MultiChainAsset = {
@@ -19,10 +21,13 @@ export type MultiChainAsset = {
 };
 
 export const WRAPPED_ASSET: MultiChainAsset = {
-  [`${ChainId.arbitrum}`]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
   [`${ChainId.mainnet}`]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   [`${ChainId.optimism}`]: '0x4200000000000000000000000000000000000006',
   [`${ChainId.polygon}`]: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+  [`${ChainId.arbitrum}`]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+  [`${ChainId.bsc}`]: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+  [`${ChainId.zora}`]: '0x4200000000000000000000000000000000000006',
+  [`${ChainId.base}`]: '0x4200000000000000000000000000000000000006',
 };
 
 export const DAI: MultiChainAsset = {

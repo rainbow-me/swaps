@@ -8,8 +8,11 @@ export enum ChainId {
   goerli = 5,
   rinkeby = 4,
   optimism = 10,
+  bsc = 56,
   polygon = 137,
   arbitrum = 42161,
+  zora = 7777777,
+  base = 8453,
 }
 
 export enum Source {
@@ -58,13 +61,16 @@ export interface Quote {
   data?: string;
   value?: BigNumberish;
   sellAmount: BigNumberish;
+  sellAmountDisplay: BigNumberish;
   sellAmountInEth: BigNumberish;
   sellAmountMinusFees: BigNumberish;
   sellTokenAddress: EthereumAddress;
   buyTokenAddress: EthereumAddress;
   buyAmount: BigNumberish;
+  buyAmountDisplay: BigNumberish;
   buyAmountInEth: BigNumberish;
   fee: BigNumberish;
+  feeInEth: BigNumberish;
   feePercentageBasisPoints: number;
   protocols?: ProtocolShare[];
   inputTokenDecimals?: number;
