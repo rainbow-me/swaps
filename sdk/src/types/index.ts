@@ -10,6 +10,8 @@ export enum ChainId {
   optimism = 10,
   polygon = 137,
   arbitrum = 42161,
+  zora = 7777777,
+  base = 8453,
 }
 
 export enum Source {
