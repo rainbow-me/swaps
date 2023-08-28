@@ -28,6 +28,7 @@ import {
   SOCKET_REGISTRY_CONTRACT_ADDRESSESS,
   WRAPPED_ASSET,
 } from './utils/constants';
+import { getReferrerCode } from './utils/referrer';
 import { signPermit } from '.';
 
 /**
@@ -317,6 +318,7 @@ const calculateDeadline = async (wallet: Wallet) => {
  * @param {Signer} wallet
  * @param {boolean} permit
  * @param {number} ChainId
+ * @param {string} referrer
  * @returns {Promise<Transaction>}
  */
 export const fillQuote = async (
@@ -324,7 +326,8 @@ export const fillQuote = async (
   transactionOptions: TransactionOptions,
   wallet: Signer,
   permit: boolean,
-  chainId: ChainId
+  chainId: ChainId,
+  referrer?: string
 ): Promise<Transaction> => {
   const instance = new Contract(
     RAINBOW_ROUTER_CONTRACT_ADDRESS,
@@ -347,7 +350,7 @@ export const fillQuote = async (
   const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
 
   if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
-    swapTx = await instance.fillQuoteEthToToken(
+    swapTx = await instance.populateTransaction.fillQuoteEthToToken(
       buyTokenAddress,
       to,
       data,
@@ -369,7 +372,7 @@ export const fillQuote = async (
         deadline,
         chainId
       );
-      swapTx = await instance.fillQuoteTokenToEthWithPermit(
+      swapTx = await instance.populateTransaction.fillQuoteTokenToEthWithPermit(
         sellTokenAddress,
         to,
         data,
@@ -382,7 +385,7 @@ export const fillQuote = async (
         }
       );
     } else {
-      swapTx = await instance.fillQuoteTokenToEth(
+      swapTx = await instance.populateTransaction.fillQuoteTokenToEth(
         sellTokenAddress,
         to,
         data,
@@ -406,21 +409,22 @@ export const fillQuote = async (
         deadline,
         chainId
       );
-      swapTx = await instance.fillQuoteTokenToTokenWithPermit(
-        sellTokenAddress,
-        buyTokenAddress,
-        to,
-        data,
-        sellAmount,
-        fee,
-        permitSignature,
-        {
-          ...transactionOptions,
-          value,
-        }
-      );
+      swapTx =
+        await instance.populateTransaction.fillQuoteTokenToTokenWithPermit(
+          sellTokenAddress,
+          buyTokenAddress,
+          to,
+          data,
+          sellAmount,
+          fee,
+          permitSignature,
+          {
+            ...transactionOptions,
+            value,
+          }
+        );
     } else {
-      swapTx = await instance.fillQuoteTokenToToken(
+      swapTx = await instance.populateTransaction.fillQuoteTokenToToken(
         sellTokenAddress,
         buyTokenAddress,
         to,
@@ -434,7 +438,22 @@ export const fillQuote = async (
       );
     }
   }
-  return swapTx;
+
+  if (referrer) {
+    swapTx.data = `${swapTx.data}${getReferrerCode(referrer)}`;
+  }
+
+  const newSwapTx = await wallet.sendTransaction({
+    data: swapTx.data,
+    from: swapTx.from,
+    to: swapTx.to,
+    ...{
+      ...transactionOptions,
+      value,
+    },
+  });
+
+  return newSwapTx;
 };
 
 /**
@@ -443,18 +462,26 @@ export const fillQuote = async (
  * @param {CrosschainQuote} quote
  * @param {TransactionOptions} transactionOptions
  * @param {Signer} wallet
+ * @param {string} referrer
  * @returns {Promise<Transaction>}
  */
 export const fillCrosschainQuote = async (
   quote: CrosschainQuote,
   transactionOptions: TransactionOptions,
-  wallet: Signer
+  wallet: Signer,
+  referrer?: string
 ): Promise<Transaction> => {
   const { data, from, value } = quote;
+
   const to = SOCKET_REGISTRY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
 
+  let txData = data;
+  if (referrer) {
+    txData = `${txData}${getReferrerCode(referrer)}`;
+  }
+
   const swapTx = await wallet.sendTransaction({
-    data,
+    data: txData,
     from,
     to,
     ...{

@@ -77,6 +77,20 @@ export interface Quote {
   outputTokenDecimals?: number;
   defaultGasLimit?: string;
   swapType?: string;
+  tradeAmountUSD: number;
+  rewards?: Reward[];
+}
+export interface Reward {
+  amount: number;
+  token: {
+    asset_code: string;
+    decimals: number;
+    icon_url: string;
+    name: string;
+    network: string;
+    symbol: string;
+    networks: Record<ChainId, { address: string; decimals: number }>;
+  };
 }
 
 interface SocketGasFees {
