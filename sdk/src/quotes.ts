@@ -28,8 +28,8 @@ import {
   SOCKET_REGISTRY_CONTRACT_ADDRESSESS,
   WRAPPED_ASSET,
 } from './utils/constants';
+import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
-import { signPermit } from '.';
 
 /**
  * Function to get a swap formatted quote url to use with backend
