@@ -69,8 +69,8 @@
     "@ethersproject/strings": "5.7.0",
     "@ethersproject/transactions": "5.7.0",
     "@ethersproject/wallet": "5.7.0",
-    "@metamask/eth-sig-util": "5.0.1",
-    "ethereumjs-util": "6.2.1"
+    "@metamask/eth-sig-util": "7.0.0",
+    "@ethereumjs/util": "9.0.0"
   },
   "resolutions": {
     "**/node-notifier": "8.0.1",
