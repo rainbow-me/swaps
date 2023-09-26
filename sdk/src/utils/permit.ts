@@ -1,3 +1,4 @@
+import { addHexPrefix } from '@ethereumjs/util';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { splitSignature } from '@ethersproject/bytes';
 import { Contract } from '@ethersproject/contracts';
@@ -7,7 +8,6 @@ import {
   SignTypedDataVersion,
   TypedDataUtils,
 } from '@metamask/eth-sig-util';
-import { addHexPrefix, toBuffer } from 'ethereumjs-util';
 import { DAI, TORN_ADDRESS, VSP_ADDRESS, WNXM_ADDRESS } from '..';
 import DAIAbi from '../abi/DAI.json';
 import IERC2612Abi from '../abi/IERC2612.json';
@@ -190,7 +190,10 @@ export async function signPermit(
     types,
   };
 
-  const privateKeyBuffer = toBuffer(addHexPrefix(wallet.privateKey));
+  const privateKeyBuffer = Buffer.from(
+    addHexPrefix(wallet.privateKey).substring(2),
+    'hex'
+  );
 
   const signature = signTypedData({
     data: data as any,
