@@ -25,7 +25,7 @@ import {
   MAX_INT,
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
-  SOCKET_REGISTRY_CONTRACT_ADDRESSESS,
+  SOCKET_GATEWAY_CONTRACT_ADDRESSESS,
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
@@ -300,7 +300,7 @@ export const getCrosschainQuote = async (
 
   const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
   quoteWithRestrictedAllowanceTarget.allowanceTarget =
-    SOCKET_REGISTRY_CONTRACT_ADDRESSESS.get(chainId);
+    SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainId);
 
   return quoteWithRestrictedAllowanceTarget;
 };
@@ -473,7 +473,7 @@ export const fillCrosschainQuote = async (
 ): Promise<Transaction> => {
   const { data, from, value } = quote;
 
-  const to = SOCKET_REGISTRY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
+  const to = SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
 
   let txData = data;
   if (referrer) {
@@ -572,7 +572,7 @@ export const getCrosschainQuoteExecutionDetails = (
   provider: StaticJsonRpcProvider
 ): CrosschainQuoteExecutionDetails => {
   const { from, data, value } = quote;
-  const to = SOCKET_REGISTRY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
+  const to = SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
 
   return {
     method: provider.estimateGas({
