@@ -10,6 +10,9 @@ Run tests with: `MAINNET_RPC_ENDPOINT=https://eth-mainnet.g.alchemy.com/v2/{ALCH
 - Optimism Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://optimistic.etherscan.io/address/0x00000000009726632680fb29d3f7a9734e3010e2)
 - Arbitrum One: [0x00000000009726632680fb29d3f7a9734e3010e2](https://arbiscan.io/address/0x00000000009726632680fb29d3f7a9734e3010e2)
 - Polygon Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://polygonscan.com/address/0x00000000009726632680fb29d3f7a9734e3010e2)
+- Base Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://basescan.io/address/0x00000000009726632680fb29d3f7a9734e3010e2)
+- BSC Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://bscscan.com/address/0x00000000009726632680fb29d3f7a9734e3010e2)
+- AVAX Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://snowtrace.io/address/0x00000000009726632680fb29d3f7a9734e3010e2)
 
 ## Audits
 - [OpenZeppelin (2022/01/10 - 2022/02/25)](audits/2022-02-25-OpenZeppelin-Rainbow-Swap-Aggregator.pdf)
