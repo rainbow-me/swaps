@@ -5,8 +5,8 @@ export const API_BASE_URL = 'https://swap.p.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
 
-// SOCKET_REGISTRY_CONTRACT_ADDRESSES is mapped by int chain ID to avoid a breaking change
-export const SOCKET_REGISTRY_CONTRACT_ADDRESSESS = new Map([
+// SOCKET_GATEWAY_CONTRACT_ADDRESSES is mapped by int chain ID to avoid a breaking change
+export const SOCKET_GATEWAY_CONTRACT_ADDRESSESS = new Map([
   [ChainId.mainnet, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
   [ChainId.optimism, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
   [ChainId.polygon, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
@@ -14,6 +14,7 @@ export const SOCKET_REGISTRY_CONTRACT_ADDRESSESS = new Map([
   [ChainId.bsc, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
   [ChainId.zora, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
   [ChainId.base, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
+  [ChainId.avalanche, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
 ]);
 
 export type MultiChainAsset = {
@@ -28,6 +29,7 @@ export const WRAPPED_ASSET: MultiChainAsset = {
   [`${ChainId.bsc}`]: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
   [`${ChainId.zora}`]: '0x4200000000000000000000000000000000000006',
   [`${ChainId.base}`]: '0x4200000000000000000000000000000000000006',
+  [`${ChainId.avalanche}`]: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
 };
 
 export const DAI: MultiChainAsset = {
