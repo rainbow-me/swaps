@@ -8,10 +8,10 @@ import {
   SignTypedDataVersion,
   TypedDataUtils,
 } from '@metamask/eth-sig-util';
-import { DAI, TORN_ADDRESS, VSP_ADDRESS, WNXM_ADDRESS } from '..';
 import DAIAbi from '../abi/DAI.json';
 import IERC2612Abi from '../abi/IERC2612.json';
 import { ChainId, EthereumAddress } from '../types';
+import { DAI, TORN_ADDRESS, VSP_ADDRESS, WNXM_ADDRESS } from './constants';
 
 const EIP712_DOMAIN_TYPE = [
   { name: 'name', type: 'string' },
