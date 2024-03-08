@@ -14,6 +14,7 @@ export enum ChainId {
   zora = 7777777,
   base = 8453,
   avalanche = 43114,
+  blast = 81457,
 }
 
 export enum Source {
