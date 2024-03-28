@@ -5,6 +5,9 @@ export const API_BASE_URL = 'https://swap.p.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
 
+export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA =
+  '0xa61550e9ddd2797e16489db09343162be98d9483';
+
 // SOCKET_GATEWAY_CONTRACT_ADDRESSES is mapped by int chain ID to avoid a breaking change
 export const SOCKET_GATEWAY_CONTRACT_ADDRESSESS = new Map([
   [ChainId.mainnet, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
