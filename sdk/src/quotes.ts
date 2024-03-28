@@ -25,11 +25,25 @@ import {
   MAX_INT,
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
+  RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
   SOCKET_GATEWAY_CONTRACT_ADDRESSESS,
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
+
+/**
+ * Function to get the rainbow router contract address based on the chainId
+ *
+ * @param {ChainId} chainId
+ * @returns {string}
+ */
+export const getRainbowRouterContractAddress = (chainId: ChainId) => {
+  if (chainId === ChainId.zora) {
+    return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
+  }
+  return RAINBOW_ROUTER_CONTRACT_ADDRESS;
+};
 
 /**
  * Function to get a swap formatted quote url to use with backend
@@ -81,7 +95,7 @@ const buildRainbowQuoteUrl = ({
     // When buying ETH, we need to tell the aggregator
     // to return the funds to the contract if we need to take a fee
     ...(buyTokenAddress === ETH_ADDRESS
-      ? { destReceiver: RAINBOW_ROUTER_CONTRACT_ADDRESS }
+      ? { destReceiver: getRainbowRouterContractAddress(chainId) }
       : {}),
     ...(feePercentageBasisPoints !== undefined
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
