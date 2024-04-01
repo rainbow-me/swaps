@@ -84,6 +84,7 @@ const buildRainbowQuoteUrl = ({
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
+    enableZoraSwaps: String(true),
     fromAddress,
     sellToken: sellTokenAddress,
     slippage: String(slippage),
@@ -344,7 +345,7 @@ export const fillQuote = async (
   referrer?: string
 ): Promise<Transaction> => {
   const instance = new Contract(
-    RAINBOW_ROUTER_CONTRACT_ADDRESS,
+    getRainbowRouterContractAddress(chainId),
     RainbowRouterABI,
     wallet
   );
@@ -513,7 +514,7 @@ export const getQuoteExecutionDetails = (
   provider: StaticJsonRpcProvider
 ): QuoteExecutionDetails => {
   const instance = new Contract(
-    RAINBOW_ROUTER_CONTRACT_ADDRESS,
+    getRainbowRouterContractAddress(quote.chainId),
     RainbowRouterABI,
     provider
   );

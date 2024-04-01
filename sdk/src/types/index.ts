@@ -81,6 +81,7 @@ export interface Quote {
   swapType?: string;
   tradeAmountUSD: number;
   rewards?: Reward[];
+  chainId: number;
 }
 export interface Reward {
   amount: number;
