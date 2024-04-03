@@ -35,6 +35,7 @@ export const WRAPPED_ASSET: MultiChainAsset = {
   [`${ChainId.base}`]: '0x4200000000000000000000000000000000000006',
   [`${ChainId.avalanche}`]: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
   [`${ChainId.blast}`]: '0x4300000000000000000000000000000000000004',
+  [`${ChainId.degen}`]: '0xeb54dacb4c2ccb64f8074eceea33b5ebb38e5387',
 };
 
 export const DAI: MultiChainAsset = {

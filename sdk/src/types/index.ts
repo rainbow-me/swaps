@@ -15,10 +15,13 @@ export enum ChainId {
   base = 8453,
   avalanche = 43114,
   blast = 81457,
+  degen = 666666666,
 }
 
 export enum Source {
   Aggregator0x = '0x',
+  Aggregator1inch = '1inch',
+  // DEPRECATED: Use Aggregator1inch instead
   Aggregotor1inch = '1inch',
 }
 
