@@ -74,6 +74,7 @@ export interface Quote {
   buyAmount: BigNumberish;
   buyAmountDisplay: BigNumberish;
   buyAmountInEth: BigNumberish;
+  buyAmountMinusFees: BigNumberish;
   fee: BigNumberish;
   feeInEth: BigNumberish;
   feePercentageBasisPoints: number;
