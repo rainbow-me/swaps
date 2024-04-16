@@ -257,3 +257,22 @@ export interface CrosschainQuoteExecutionDetails {
   method: any;
   params: TransactionOptions;
 }
+
+export interface SlippageParams {
+  chainId: number;
+  sellTokenAddress: EthereumAddress;
+  buyTokenAddress: EthereumAddress;
+  sellAmount?: BigNumberish;
+  buyAmount?: BigNumberish;
+  toChainId?: number;
+}
+
+export interface SlippageError {
+  error: boolean;
+  error_code?: number;
+  message: string;
+}
+
+export interface Slippage {
+  slippagePercent: number;
+}
