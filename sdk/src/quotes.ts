@@ -227,9 +227,11 @@ export const getQuote = async (
   if (isWrap || isUnwrap) {
     return {
       buyAmount: sellAmount || buyAmount,
+      buyAmountMinusFees: sellAmount || buyAmount,
       buyTokenAddress,
       defaultGasLimit: isWrap ? '30000' : '40000',
       fee: 0,
+      feeInEth: 0,
       feePercentageBasisPoints: 0,
       from: fromAddress,
       inputTokenDecimals: 18,
