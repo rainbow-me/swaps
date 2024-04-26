@@ -18,6 +18,7 @@ import {
   Source,
   SwapType,
   TransactionOptions,
+  ValidCrosschainSwapsSources,
 } from './types';
 import {
   API_BASE_URL,
@@ -26,6 +27,7 @@ import {
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
+  RELAY_LINK_BRIDGING_RELAYER_ADDRESS,
   SOCKET_GATEWAY_CONTRACT_ADDRESSESS,
   WRAPPED_ASSET,
 } from './utils/constants';
@@ -148,7 +150,7 @@ const buildRainbowCrosschainQuoteUrl = ({
     swapType: SwapType.crossChain,
     toChainId: String(toChainId),
   });
-  return `${API_BASE_URL}/v1/quote?bridgeVersion=2&` + searchParams.toString();
+  return `${API_BASE_URL}/v1/quote?bridgeVersion=3&` + searchParams.toString();
 };
 
 /**
@@ -316,11 +318,52 @@ export const getCrosschainQuote = async (
   }
 
   const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
-  quoteWithRestrictedAllowanceTarget.allowanceTarget =
-    SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainId);
+  try {
+    quoteWithRestrictedAllowanceTarget.allowanceTarget = getDestinationAddressForCrosschainSwap(
+        quoteWithRestrictedAllowanceTarget.source,
+        quoteWithRestrictedAllowanceTarget.chainId,
+        quoteWithRestrictedAllowanceTarget.allowanceTarget,
+    );
+  } catch (e: any) {
+    return {
+      error: true,
+      message: e.message,
+    } as QuoteError;
+  }
 
   return quoteWithRestrictedAllowanceTarget;
 };
+
+const getDestinationAddressForCrosschainSwap = (
+    quoteSource: Source | undefined,
+    chainId: ChainId,
+    assertedAddress: string | undefined,
+): string => {
+  if (assertedAddress === undefined || assertedAddress === "") {
+    throw new Error(`quote's allowance and to addresses must be defined (API Response)`);
+  }
+  let expectedAddress = getDestinationAddressForCrosschainSwapSource(quoteSource, chainId);
+  if (expectedAddress === undefined || expectedAddress === "") {
+    throw new Error(`expected source ${quoteSource}'s destination address on chainID ${chainId} must be defined (Swap SDK)`);
+  }
+  if (expectedAddress.toLowerCase() !== assertedAddress?.toLowerCase()) {
+    throw new Error(`source ${quoteSource}'s destination address '${assertedAddress}' on chainID ${chainId} is not consistent, expected: '${expectedAddress}'`);
+  }
+  return expectedAddress!.toString()
+}
+
+const getDestinationAddressForCrosschainSwapSource = (
+    quoteSource: Source | undefined,
+    chainId: ChainId,
+): string | undefined => {
+  const validSource = quoteSource !== undefined;
+  if (validSource && quoteSource == Source.CrosschainAggregatorSocket) {
+    return SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainId);
+  } else if (validSource && quoteSource == Source.CrosschainAggregatorRelay) {
+    return RELAY_LINK_BRIDGING_RELAYER_ADDRESS;
+  }
+  return undefined
+}
 
 const calculateDeadline = async (wallet: Wallet) => {
   const { timestamp } = await wallet.provider.getBlock('latest');
@@ -490,7 +533,7 @@ export const fillCrosschainQuote = async (
 ): Promise<Transaction> => {
   const { data, from, value } = quote;
 
-  const to = SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
+  const to = getDestinationAddressForCrosschainSwap(quote.source, quote.fromChainId, quote.to);
 
   let txData = data;
   if (referrer) {
@@ -589,7 +632,7 @@ export const getCrosschainQuoteExecutionDetails = (
   provider: StaticJsonRpcProvider
 ): CrosschainQuoteExecutionDetails => {
   const { from, data, value } = quote;
-  const to = SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
+  const to = getDestinationAddressForCrosschainSwap(quote.source, quote.fromChainId, quote.to);
 
   return {
     method: provider.estimateGas({
