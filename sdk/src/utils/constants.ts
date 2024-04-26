@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { ChainId, EthereumAddress } from '../types';
 export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-export const API_BASE_URL = 'https://swap.p.rainbow.me';
+export const API_BASE_URL = 'https://swap.s.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
 
