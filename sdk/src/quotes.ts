@@ -18,7 +18,6 @@ import {
   Source,
   SwapType,
   TransactionOptions,
-  ValidCrosschainSwapsSources,
 } from './types';
 import {
   API_BASE_URL,
@@ -280,7 +279,9 @@ export const getQuote = async (
  * @param {BigNumberish} params.sellAmount
  * @param {number} params.slippage
  * @param {boolean} params.refuel
- * @returns {Promise<CrosschainQuote | null>}
+ * @returns {Promise<CrosschainQuote | QuoteError | null>} returns error in case the request failed or the
+ *                                                         destination address is not consistent with the SDK's
+ *                                                         stored destination address
  */
 export const getCrosschainQuote = async (
   params: QuoteParams
@@ -322,43 +323,67 @@ export const getCrosschainQuote = async (
     quoteWithRestrictedAllowanceTarget.allowanceTarget = getDestinationAddressForCrosschainSwap(
         quoteWithRestrictedAllowanceTarget.source,
         quoteWithRestrictedAllowanceTarget.chainId,
-        quoteWithRestrictedAllowanceTarget.allowanceTarget,
+        quoteWithRestrictedAllowanceTarget.allowanceTarget
     );
-  } catch (e: any) {
+  } catch (e) {
     return {
       error: true,
-      message: e.message,
+      message:
+        e instanceof Error
+          ? e.message
+          : `unexpected error happened while checking crosschain quote's address: ${quoteWithRestrictedAllowanceTarget.allowanceTarget}`,
     } as QuoteError;
   }
 
   return quoteWithRestrictedAllowanceTarget;
 };
 
+/**
+ * Sanity checks the quote's returned address against the expected address stored in the SDK.
+ * This function ensures the integrity and correctness of the destination address provided by the quote source.
+ *
+ * @param quoteSource - The aggregator used for the quote.
+ * @param chainID - The origin network chain ID for the quote.
+ * @param assertedAddress - The destination address provided by the quote.
+ * @returns {string} The destination address stored in the SDK for the provided (source, chainID) combination.
+ * @throws {Error} Throws an error if any of the following conditions are met:
+ *   - The quote's destination address is undefined.
+ *   - No destination address is defined in the SDK for the provided (source, chainID) combination.
+ *   - The provided quote's destination address does not case-insensitively match the SDK's stored destination address.
+ */
 const getDestinationAddressForCrosschainSwap = (
     quoteSource: Source | undefined,
-    chainId: ChainId,
+    chainID: ChainId,
     assertedAddress: string | undefined,
 ): string => {
   if (assertedAddress === undefined || assertedAddress === "") {
     throw new Error(`quote's allowance and to addresses must be defined (API Response)`);
   }
-  let expectedAddress = getDestinationAddressForCrosschainSwapSource(quoteSource, chainId);
+  let expectedAddress = getStoredAddressByCrosschainSource(quoteSource, chainID);
   if (expectedAddress === undefined || expectedAddress === "") {
-    throw new Error(`expected source ${quoteSource}'s destination address on chainID ${chainId} must be defined (Swap SDK)`);
+    throw new Error(`expected source ${quoteSource}'s destination address on chainID ${chainID} must be defined (Swap SDK)`);
   }
   if (expectedAddress.toLowerCase() !== assertedAddress?.toLowerCase()) {
-    throw new Error(`source ${quoteSource}'s destination address '${assertedAddress}' on chainID ${chainId} is not consistent, expected: '${expectedAddress}'`);
+    throw new Error(`source ${quoteSource}'s destination address '${assertedAddress}' on chainID ${chainID} is not consistent, expected: '${expectedAddress}'`);
   }
   return expectedAddress!.toString()
 }
 
-const getDestinationAddressForCrosschainSwapSource = (
+/**
+ * Retrieves the destination address stored in the SDK corresponding to the specified aggregator and chain ID.
+ *
+ * @param quoteSource - The aggregator used for the quote.
+ * @param chainID - The origin network chain ID for the quote.
+ * @returns {string | undefined} The destination address stored in the SDK for the provided (source, chainID) combination.
+ *   Returns `undefined` if no address is stored for the specified combination.
+ */
+const getStoredAddressByCrosschainSource = (
     quoteSource: Source | undefined,
-    chainId: ChainId,
+    chainID: ChainId,
 ): string | undefined => {
   const validSource = quoteSource !== undefined;
   if (validSource && quoteSource == Source.CrosschainAggregatorSocket) {
-    return SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainId);
+    return SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainID);
   } else if (validSource && quoteSource == Source.CrosschainAggregatorRelay) {
     return RELAY_LINK_BRIDGING_RELAYER_ADDRESS;
   }
