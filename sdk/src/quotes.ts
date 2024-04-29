@@ -26,12 +26,14 @@ import {
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
-  RELAY_LINK_BRIDGING_RELAYER_ADDRESS,
-  SOCKET_GATEWAY_CONTRACT_ADDRESSESS,
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
+import {
+  getDestinationAddressForCrosschainSwap,
+  getToAddressFromCrosschainQuote,
+} from './utils/sanity_check';
 
 /**
  * Function to get the rainbow router contract address based on the chainId
@@ -339,67 +341,6 @@ export const getCrosschainQuote = async (
   return quoteWithRestrictedAllowanceTarget;
 };
 
-/**
- * Sanity checks the quote's returned address against the expected address stored in the SDK.
- * This function ensures the integrity and correctness of the destination address provided by the quote source.
- *
- * @param quoteSource - The aggregator used for the quote.
- * @param chainID - The origin network chain ID for the quote.
- * @param assertedAddress - The destination address provided by the quote.
- * @returns {string} The destination address stored in the SDK for the provided (source, chainID) combination.
- * @throws {Error} Throws an error if any of the following conditions are met:
- *   - The quote's destination address is undefined.
- *   - No destination address is defined in the SDK for the provided (source, chainID) combination.
- *   - The provided quote's destination address does not case-insensitively match the SDK's stored destination address.
- */
-const getDestinationAddressForCrosschainSwap = (
-  quoteSource: Source | undefined,
-  chainID: ChainId,
-  assertedAddress: string | undefined
-): string => {
-  if (assertedAddress === undefined || assertedAddress === '') {
-    throw new Error(
-      `quote's allowance and to addresses must be defined (API Response)`
-    );
-  }
-  let expectedAddress = getStoredAddressByCrosschainSource(
-    quoteSource,
-    chainID
-  );
-  if (expectedAddress === undefined || expectedAddress === '') {
-    throw new Error(
-      `expected source ${quoteSource}'s destination address on chainID ${chainID} must be defined (Swap SDK)`
-    );
-  }
-  if (expectedAddress.toLowerCase() !== assertedAddress?.toLowerCase()) {
-    throw new Error(
-      `source ${quoteSource}'s destination address '${assertedAddress}' on chainID ${chainID} is not consistent, expected: '${expectedAddress}'`
-    );
-  }
-  return expectedAddress!.toString();
-};
-
-/**
- * Retrieves the destination address stored in the SDK corresponding to the specified aggregator and chain ID.
- *
- * @param quoteSource - The aggregator used for the quote.
- * @param chainID - The origin network chain ID for the quote.
- * @returns {string | undefined} The destination address stored in the SDK for the provided (source, chainID) combination.
- *   Returns `undefined` if no address is stored for the specified combination.
- */
-const getStoredAddressByCrosschainSource = (
-  quoteSource: Source | undefined,
-  chainID: ChainId
-): string | undefined => {
-  const validSource = quoteSource !== undefined;
-  if (validSource && quoteSource === Source.CrosschainAggregatorSocket) {
-    return SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainID);
-  } else if (validSource && quoteSource === Source.CrosschainAggregatorRelay) {
-    return RELAY_LINK_BRIDGING_RELAYER_ADDRESS;
-  }
-  return undefined;
-};
-
 const calculateDeadline = async (wallet: Wallet) => {
   const { timestamp } = await wallet.provider.getBlock('latest');
   return timestamp + PERMIT_EXPIRATION_TS;
@@ -571,7 +512,7 @@ export const fillCrosschainQuote = async (
   const to = getDestinationAddressForCrosschainSwap(
     quote.source,
     quote.fromChainId,
-    quote.to
+    getToAddressFromCrosschainQuote(quote)
   );
 
   let txData = data;
@@ -674,7 +615,7 @@ export const getCrosschainQuoteExecutionDetails = (
   const to = getDestinationAddressForCrosschainSwap(
     quote.source,
     quote.fromChainId,
-    quote.to
+    getToAddressFromCrosschainQuote(quote)
   );
 
   return {
