@@ -22,7 +22,8 @@ export const SOCKET_GATEWAY_CONTRACT_ADDRESSESS = new Map([
 ]);
 
 // RELAY_LINK_BRIDGING_RELAYER_ADDRESS is the EOA used by relay link as relayer on all chains
-export const RELAY_LINK_BRIDGING_RELAYER_ADDRESS = '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF';
+export const RELAY_LINK_BRIDGING_RELAYER_ADDRESS =
+  '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF';
 
 export type MultiChainAsset = {
   [key: string]: EthereumAddress;
