@@ -7,6 +7,39 @@ import {
 } from './constants';
 
 /**
+ * Sanity checks the quote's allowance address against the expected address stored in the SDK.
+ * Relay works with an EOA an direct transfers, so no allowance is expected.
+ *
+ * @param quoteSource The aggregator used for the quote.
+ * @param chainID The origin network chain ID for the quote.
+ * @param assertedAddress The allowance address provided by the quote.
+ * @returns {string} The allowance address expected in the SDK for the provided (source, chainID) combination.
+ * @throws {Error} Throws an error if any of the following conditions are met:
+ *   - It's a relay's quote and the quote's allowance address is not empty/undefined.
+ *   - It's a socket's quote and the quote's allowance address is undefined or different to the expected one.
+ *   - No destination address is defined in the SDK for the provided (source, chainID) combination.
+ */
+export function sanityCheckAllowanceAddress(
+  quoteSource: Source | undefined,
+  chainID: ChainId,
+  assertedAddress: string | undefined
+): string {
+  const validSource = quoteSource !== undefined;
+  if (validSource && quoteSource === Source.CrosschainAggregatorSocket) {
+    return sanityCheckDestinationAddress(quoteSource, chainID, assertedAddress);
+  }
+  if (validSource && quoteSource === Source.CrosschainAggregatorRelay) {
+    if (assertedAddress === undefined || assertedAddress === '') {
+      return '';
+    }
+    throw new Error(
+      `relay should not bring allowance address: ${assertedAddress}`
+    );
+  }
+  throw new Error(`unknown crosschain swap source ${quoteSource}`);
+}
+
+/**
  * Sanity checks the quote's returned address against the expected address stored in the SDK.
  * This function ensures the integrity and correctness of the destination address provided by the quote source.
  *
@@ -19,7 +52,7 @@ import {
  *   - No destination address is defined in the SDK for the provided (source, chainID) combination.
  *   - The provided quote's destination address does not case-insensitively match the SDK's stored destination address.
  */
-export function getDestinationAddressForCrosschainSwap(
+export function sanityCheckDestinationAddress(
   quoteSource: Source | undefined,
   chainID: ChainId,
   assertedAddress: string | undefined
@@ -29,10 +62,7 @@ export function getDestinationAddressForCrosschainSwap(
       `quote's allowance and to addresses must be defined (API Response)`
     );
   }
-  let expectedAddress = getStoredAddressByCrosschainSource(
-    quoteSource,
-    chainID
-  );
+  let expectedAddress = getExpectedDestinationAddress(quoteSource, chainID);
   if (expectedAddress === undefined || expectedAddress === '') {
     throw new Error(
       `expected source ${quoteSource}'s destination address on chainID ${chainID} must be defined (Swap SDK)`
@@ -83,7 +113,7 @@ export function getDestinationAddressForCrosschainSwap(
  * console.log(getToAddressFromCrosschainQuote(Source.CrosschainAggregatorRelay, quoteRelayERC20));
  * // Output: '0xf70da97812cb96acdf810712aa562db8dfa3dbef' (assuming the call data was a ERC20 transfer)
  */
-export function getToAddressFromCrosschainQuote(
+export function extractDestinationAddress(
   quote: CrosschainQuote
 ): string | undefined {
   const quoteSource = quote.source;
@@ -95,7 +125,7 @@ export function getToAddressFromCrosschainQuote(
     if (quote.sellTokenAddress?.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
       return quote.to;
     }
-    return decodeERC20TransferData(quote.data);
+    return decodeERC20TransferToData(quote.data);
   }
   return undefined;
 }
@@ -115,17 +145,17 @@ export function getToAddressFromCrosschainQuote(
  * @returns { string | undefined } The destination address. If any error happens.
  * Returns 'undefined' if it could not decode the call data.
  */
-export function decodeERC20TransferData(
+export function decodeERC20TransferToData(
   data: string | undefined
 ): string | undefined {
   if (!data?.startsWith(ERC20_TRANSFER_SIGNATURE)) {
     return undefined;
   }
   const paramsData = data.slice(ERC20_TRANSFER_SIGNATURE.length);
-  if (paramsData.length >= 64 * 2) {
-    return `0x${paramsData.slice(0, 64).replace(/^0+/, '')}`;
+  if (paramsData.length < 64 * 2) {
+    return undefined;
   }
-  return undefined;
+  return `0x${paramsData.slice(0, 64).replace(/^0+/, '')}`;
 }
 
 /**
@@ -136,7 +166,7 @@ export function decodeERC20TransferData(
  * @returns {string | undefined} The destination address stored in the SDK for the provided (source, chainID) combination.
  * Returns `undefined` if no address is stored for the specified combination.
  */
-export function getStoredAddressByCrosschainSource(
+export function getExpectedDestinationAddress(
   quoteSource: Source | undefined,
   chainID: ChainId
 ): string | undefined {
