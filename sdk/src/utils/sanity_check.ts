@@ -13,7 +13,8 @@ import {
  * @param quoteSource The aggregator used for the quote.
  * @param chainID The origin network chain ID for the quote.
  * @param assertedAddress The destination address provided by the quote.
- * @returns {string} The destination address stored in the SDK for the provided (source, chainID) combination.
+ * @returns {string, boolean} The destination address stored in the SDK for the provided (source, chainID) combination.
+ * And if it should be overridden in the quote.
  * @throws {Error} Throws an error if any of the following conditions are met:
  *   - The quote's destination address is undefined.
  *   - No destination address is defined in the SDK for the provided (source, chainID) combination.
@@ -23,7 +24,10 @@ export function sanityCheckAddress(
   quoteSource: Source | undefined,
   chainID: ChainId,
   assertedAddress: string | undefined
-): string {
+): {
+  expectedAddress: string;
+  shouldOverride: boolean;
+} {
   if (assertedAddress === undefined || assertedAddress === '') {
     throw new Error(
       `quote's destination addresses must be defined (API Response)`
@@ -43,7 +47,7 @@ export function sanityCheckAddress(
       `source ${quoteSource}'s destination address '${assertedAddress}' on chainID ${chainID} is not consistent, expected: '${expectedAddress}'`
     );
   }
-  return shouldOverride ? expectedAddress!.toString() : assertedAddress;
+  return { expectedAddress, shouldOverride };
 }
 
 /**

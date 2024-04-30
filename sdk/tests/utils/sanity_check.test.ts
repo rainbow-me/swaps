@@ -2,6 +2,8 @@ import { ChainId, CrosschainQuote, EthereumAddress, Source } from '../../src';
 import {
   decodeERC20TransferToData,
   extractDestinationAddress,
+  getExpectedDestinationAddress,
+  sanityCheckAddress,
 } from '../../src/utils/sanity_check';
 
 const okERC20Data =
@@ -95,5 +97,57 @@ describe('decodeERC20TransferData', () => {
     expect(decodeERC20TransferToData(data)).toEqual(
       `0xf70da97812cb96acdf810712aa562db8dfa3dbef`
     );
+  });
+});
+
+describe('getExpectedDestinationAddress', () => {
+  it('should return expected and true for socket', () => {
+    expect(
+      getExpectedDestinationAddress(
+        Source.CrosschainAggregatorSocket,
+        ChainId.mainnet
+      )
+    ).toEqual({
+      expectedAddress: '0x3a23F943181408EAC424116Af7b7790c94Cb97a5',
+      shouldOverride: true,
+    });
+  });
+  it('should return expected and false for relay', () => {
+    expect(
+      getExpectedDestinationAddress(
+        Source.CrosschainAggregatorRelay,
+        ChainId.mainnet
+      )
+    ).toEqual({
+      expectedAddress: '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF',
+      shouldOverride: false,
+    });
+  });
+});
+
+describe('sanityCheckAddress', () => {
+  it('should return expected and true for socket', () => {
+    expect(
+      sanityCheckAddress(
+        Source.CrosschainAggregatorSocket,
+        ChainId.mainnet,
+        '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'
+      )
+    ).toEqual({
+      expectedAddress: '0x3a23F943181408EAC424116Af7b7790c94Cb97a5',
+      shouldOverride: true,
+    });
+  });
+  it('should return expected and false for relay', () => {
+    expect(
+      sanityCheckAddress(
+        Source.CrosschainAggregatorRelay,
+        ChainId.mainnet,
+        '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF'
+      )
+    ).toEqual({
+      expectedAddress: '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF',
+      shouldOverride: false,
+    });
   });
 });

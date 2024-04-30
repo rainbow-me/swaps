@@ -322,11 +322,14 @@ export const getCrosschainQuote = async (
 
   const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
   try {
-    quoteWithRestrictedAllowanceTarget.allowanceTarget = sanityCheckAddress(
+    const { expectedAddress, shouldOverride } = sanityCheckAddress(
       quoteWithRestrictedAllowanceTarget.source,
       quoteWithRestrictedAllowanceTarget.chainId,
       quoteWithRestrictedAllowanceTarget.allowanceTarget
     );
+    if (shouldOverride) {
+      quoteWithRestrictedAllowanceTarget.allowanceTarget = expectedAddress;
+    }
   } catch (e) {
     return {
       error: true,
@@ -508,11 +511,15 @@ export const fillCrosschainQuote = async (
 ): Promise<Transaction> => {
   const { data, from, value } = quote;
 
-  const to = sanityCheckAddress(
+  let to = quote.to;
+  const { expectedAddress, shouldOverride } = sanityCheckAddress(
     quote.source,
     quote.fromChainId,
     extractDestinationAddress(quote)
   );
+  if (shouldOverride) {
+    to = expectedAddress;
+  }
 
   let txData = data;
   if (referrer) {
@@ -611,11 +618,16 @@ export const getCrosschainQuoteExecutionDetails = (
   provider: StaticJsonRpcProvider
 ): CrosschainQuoteExecutionDetails => {
   const { from, data, value } = quote;
-  const to = sanityCheckAddress(
+
+  let to = quote.to;
+  const { expectedAddress, shouldOverride } = sanityCheckAddress(
     quote.source,
     quote.fromChainId,
     extractDestinationAddress(quote)
   );
+  if (shouldOverride) {
+    to = expectedAddress;
+  }
 
   return {
     method: provider.estimateGas({
