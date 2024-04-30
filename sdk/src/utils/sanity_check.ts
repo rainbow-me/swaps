@@ -7,39 +7,6 @@ import {
 } from './constants';
 
 /**
- * Sanity checks the quote's allowance address against the expected address stored in the SDK.
- * Relay works with an EOA an direct transfers, so no allowance is expected.
- *
- * @param quoteSource The aggregator used for the quote.
- * @param chainID The origin network chain ID for the quote.
- * @param assertedAddress The allowance address provided by the quote.
- * @returns {string} The allowance address expected in the SDK for the provided (source, chainID) combination.
- * @throws {Error} Throws an error if any of the following conditions are met:
- *   - It's a relay's quote and the quote's allowance address is not empty/undefined.
- *   - It's a socket's quote and the quote's allowance address is undefined or different to the expected one.
- *   - No destination address is defined in the SDK for the provided (source, chainID) combination.
- */
-export function sanityCheckAllowanceAddress(
-  quoteSource: Source | undefined,
-  chainID: ChainId,
-  assertedAddress: string | undefined
-): string {
-  const validSource = quoteSource !== undefined;
-  if (validSource && quoteSource === Source.CrosschainAggregatorSocket) {
-    return sanityCheckDestinationAddress(quoteSource, chainID, assertedAddress);
-  }
-  if (validSource && quoteSource === Source.CrosschainAggregatorRelay) {
-    if (assertedAddress === undefined || assertedAddress === '') {
-      return '';
-    }
-    throw new Error(
-      `relay should not bring allowance address: ${assertedAddress}`
-    );
-  }
-  throw new Error(`unknown crosschain swap source ${quoteSource}`);
-}
-
-/**
  * Sanity checks the quote's returned address against the expected address stored in the SDK.
  * This function ensures the integrity and correctness of the destination address provided by the quote source.
  *
@@ -52,7 +19,7 @@ export function sanityCheckAllowanceAddress(
  *   - No destination address is defined in the SDK for the provided (source, chainID) combination.
  *   - The provided quote's destination address does not case-insensitively match the SDK's stored destination address.
  */
-export function sanityCheckDestinationAddress(
+export function sanityCheckAddress(
   quoteSource: Source | undefined,
   chainID: ChainId,
   assertedAddress: string | undefined
@@ -62,7 +29,10 @@ export function sanityCheckDestinationAddress(
       `quote's destination addresses must be defined (API Response)`
     );
   }
-  let expectedAddress = getExpectedDestinationAddress(quoteSource, chainID);
+  const { expectedAddress, shouldOverride } = getExpectedDestinationAddress(
+    quoteSource,
+    chainID
+  );
   if (expectedAddress === undefined || expectedAddress === '') {
     throw new Error(
       `expected source ${quoteSource}'s destination address on chainID ${chainID} must be defined (Swap SDK)`
@@ -73,7 +43,7 @@ export function sanityCheckDestinationAddress(
       `source ${quoteSource}'s destination address '${assertedAddress}' on chainID ${chainID} is not consistent, expected: '${expectedAddress}'`
     );
   }
-  return expectedAddress!.toString();
+  return shouldOverride ? expectedAddress!.toString() : assertedAddress;
 }
 
 /**
@@ -163,18 +133,31 @@ export function decodeERC20TransferToData(
  *
  * @param quoteSource The aggregator used for the quote.
  * @param chainID The origin network chain ID for the quote.
- * @returns {string | undefined} The destination address stored in the SDK for the provided (source, chainID) combination.
- * Returns `undefined` if no address is stored for the specified combination.
+ * @returns {string | undefined, boolean} The destination address stored in the SDK for the provided (source, chainID)
+ * combination and if we need to overwrite it on the quote.
+ * Returns `undefined` if there is no address for the specified combination.
  */
 export function getExpectedDestinationAddress(
   quoteSource: Source | undefined,
   chainID: ChainId
-): string | undefined {
+): {
+  expectedAddress: string | undefined;
+  shouldOverride: boolean;
+} {
   const validSource = quoteSource !== undefined;
   if (validSource && quoteSource === Source.CrosschainAggregatorSocket) {
-    return SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainID);
+    return {
+      expectedAddress: SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainID),
+      shouldOverride: true,
+    };
   } else if (validSource && quoteSource === Source.CrosschainAggregatorRelay) {
-    return RELAY_LINK_BRIDGING_RELAYER_ADDRESS;
+    return {
+      expectedAddress: RELAY_LINK_BRIDGING_RELAYER_ADDRESS,
+      shouldOverride: false,
+    };
   }
-  return undefined;
+  return {
+    expectedAddress: undefined,
+    shouldOverride: false,
+  };
 }

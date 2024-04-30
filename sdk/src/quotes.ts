@@ -32,8 +32,7 @@ import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
 import {
   extractDestinationAddress,
-  sanityCheckAllowanceAddress,
-  sanityCheckDestinationAddress,
+  sanityCheckAddress,
 } from './utils/sanity_check';
 
 /**
@@ -323,12 +322,11 @@ export const getCrosschainQuote = async (
 
   const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
   try {
-    quoteWithRestrictedAllowanceTarget.allowanceTarget =
-      sanityCheckAllowanceAddress(
-        quoteWithRestrictedAllowanceTarget.source,
-        quoteWithRestrictedAllowanceTarget.chainId,
-        quoteWithRestrictedAllowanceTarget.allowanceTarget
-      );
+    quoteWithRestrictedAllowanceTarget.allowanceTarget = sanityCheckAddress(
+      quoteWithRestrictedAllowanceTarget.source,
+      quoteWithRestrictedAllowanceTarget.chainId,
+      quoteWithRestrictedAllowanceTarget.allowanceTarget
+    );
   } catch (e) {
     return {
       error: true,
@@ -510,7 +508,7 @@ export const fillCrosschainQuote = async (
 ): Promise<Transaction> => {
   const { data, from, value } = quote;
 
-  const to = sanityCheckDestinationAddress(
+  const to = sanityCheckAddress(
     quote.source,
     quote.fromChainId,
     extractDestinationAddress(quote)
@@ -613,7 +611,7 @@ export const getCrosschainQuoteExecutionDetails = (
   provider: StaticJsonRpcProvider
 ): CrosschainQuoteExecutionDetails => {
   const { from, data, value } = quote;
-  const to = sanityCheckDestinationAddress(
+  const to = sanityCheckAddress(
     quote.source,
     quote.fromChainId,
     extractDestinationAddress(quote)
