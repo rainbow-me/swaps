@@ -239,6 +239,7 @@ export interface CrosschainQuote extends Quote {
   allowanceTarget?: string;
   routes: SocketRoute[];
   refuel: SocketRefuelData | null;
+  no_approval: boolean | undefined;
 }
 
 export interface TransactionOptions {

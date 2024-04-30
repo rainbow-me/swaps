@@ -1,1 +1,3 @@
-.idea
+.idea/**
+sdk/*.tgz
+node_modules/
