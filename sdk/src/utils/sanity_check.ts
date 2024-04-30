@@ -59,7 +59,7 @@ export function sanityCheckDestinationAddress(
 ): string {
   if (assertedAddress === undefined || assertedAddress === '') {
     throw new Error(
-      `quote's allowance and to addresses must be defined (API Response)`
+      `quote's destination addresses must be defined (API Response)`
     );
   }
   let expectedAddress = getExpectedDestinationAddress(quoteSource, chainID);

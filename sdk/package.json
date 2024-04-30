@@ -13,7 +13,7 @@
   },
   "scripts": {
     "start": "tsdx watch",
-    "build": "tsdx build",
+    "build": "tsdx build --ignore-pattern tests/*",
     "test": "tsdx test --passWithNoTests",
     "lint": "eslint . --ext js,ts,jsx,tsx",
     "prepare": "tsdx build",
