@@ -21,8 +21,13 @@ export enum ChainId {
 export enum Source {
   Aggregator0x = '0x',
   Aggregator1inch = '1inch',
+  AggregatorRainbow = 'rainbow',
   // DEPRECATED: Use Aggregator1inch instead
   Aggregotor1inch = '1inch',
+
+  // Crosschain
+  CrosschainAggregatorSocket = 'socket',
+  CrosschainAggregatorRelay = 'relay',
 }
 
 export enum SwapType {
@@ -234,6 +239,7 @@ export interface CrosschainQuote extends Quote {
   allowanceTarget?: string;
   routes: SocketRoute[];
   refuel: SocketRefuelData | null;
+  no_approval: boolean | undefined;
 }
 
 export interface TransactionOptions {

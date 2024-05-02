@@ -26,11 +26,14 @@ import {
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
-  SOCKET_GATEWAY_CONTRACT_ADDRESSESS,
   WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
+import {
+  extractDestinationAddress,
+  sanityCheckAddress,
+} from './utils/sanity_check';
 
 /**
  * Function to get the rainbow router contract address based on the chainId
@@ -148,7 +151,7 @@ const buildRainbowCrosschainQuoteUrl = ({
     swapType: SwapType.crossChain,
     toChainId: String(toChainId),
   });
-  return `${API_BASE_URL}/v1/quote?bridgeVersion=2&` + searchParams.toString();
+  return `${API_BASE_URL}/v1/quote?bridgeVersion=3&` + searchParams.toString();
 };
 
 /**
@@ -278,7 +281,9 @@ export const getQuote = async (
  * @param {BigNumberish} params.sellAmount
  * @param {number} params.slippage
  * @param {boolean} params.refuel
- * @returns {Promise<CrosschainQuote | null>}
+ * @returns {Promise<CrosschainQuote | QuoteError | null>} returns error in case the request failed or the
+ *                                                         destination address is not consistent with the SDK's
+ *                                                         stored destination address
  */
 export const getCrosschainQuote = async (
   params: QuoteParams
@@ -316,8 +321,24 @@ export const getCrosschainQuote = async (
   }
 
   const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
-  quoteWithRestrictedAllowanceTarget.allowanceTarget =
-    SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainId);
+  try {
+    const { expectedAddress, shouldOverride } = sanityCheckAddress(
+      quoteWithRestrictedAllowanceTarget.source,
+      quoteWithRestrictedAllowanceTarget.chainId,
+      quoteWithRestrictedAllowanceTarget.allowanceTarget
+    );
+    if (shouldOverride) {
+      quoteWithRestrictedAllowanceTarget.allowanceTarget = expectedAddress;
+    }
+  } catch (e) {
+    return {
+      error: true,
+      message:
+        e instanceof Error
+          ? e.message
+          : `unexpected error happened while checking crosschain quote's address: ${quoteWithRestrictedAllowanceTarget.allowanceTarget}`,
+    } as QuoteError;
+  }
 
   return quoteWithRestrictedAllowanceTarget;
 };
@@ -490,7 +511,15 @@ export const fillCrosschainQuote = async (
 ): Promise<Transaction> => {
   const { data, from, value } = quote;
 
-  const to = SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
+  let to = quote.to;
+  const { expectedAddress, shouldOverride } = sanityCheckAddress(
+    quote.source,
+    quote.fromChainId,
+    extractDestinationAddress(quote)
+  );
+  if (shouldOverride) {
+    to = expectedAddress;
+  }
 
   let txData = data;
   if (referrer) {
@@ -589,7 +618,16 @@ export const getCrosschainQuoteExecutionDetails = (
   provider: StaticJsonRpcProvider
 ): CrosschainQuoteExecutionDetails => {
   const { from, data, value } = quote;
-  const to = SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(quote.fromChainId);
+
+  let to = quote.to;
+  const { expectedAddress, shouldOverride } = sanityCheckAddress(
+    quote.source,
+    quote.fromChainId,
+    extractDestinationAddress(quote)
+  );
+  if (shouldOverride) {
+    to = expectedAddress;
+  }
 
   return {
     method: provider.estimateGas({
