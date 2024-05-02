@@ -82,7 +82,7 @@ export function sanityCheckAddress(
  * const quoteRelayERC20 = {
  *   to: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef',
  *   data: '0xa9059cbb000000000000000000000000f70da97812cb96acdf810712aa562db8dfa3dbef...',
- *   sellTokenAddress: '0x1234567890123456789012345678901234567890'
+ *   sellTokenAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef'
  * };
  * console.log(getToAddressFromCrosschainQuote(Source.CrosschainAggregatorRelay, quoteRelayERC20));
  * // Output: '0xf70da97812cb96acdf810712aa562db8dfa3dbef' (assuming the call data was a ERC20 transfer)
