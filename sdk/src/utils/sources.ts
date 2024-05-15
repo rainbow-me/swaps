@@ -49,6 +49,7 @@ export const sources = {
   LUASWAP: 'Lua Swap',
   MINISWAP: 'Mini Swap',
   MOONISWAP: 'Mooniswap',
+  MOONISWAP_MIGRATOR: 'Mooniswap Migrator',
   MSTABLE: 'mStable',
   OASIS: 'Oasis',
   ONE_INCH_LIMIT_ORDER: '1inch Limit Order Protocol',
