@@ -82,6 +82,9 @@ export const sources = {
   SYNAPSE: 'Synapse',
   SYNTHETIX: 'Synthetix',
   SYNTHETIX_WRAPPER: 'Synthetix Wrapper',
+  TRADERJOE: 'Trader Joe',
+  TRADERJOE_V2: 'Trader Joe v2',
+  TRADERJOE_V2_1: 'Trader Joe v2.1',
   UNIFI: 'Unifi',
   UNISWAP_V1: 'Uniswap v1',
   UNISWAP_V2: 'Uniswap v2',
@@ -136,6 +139,9 @@ export const sources = {
   Lido: 'Lido',
   ShibaSwap: 'ShibaSwap',
   Clipper: 'Clipper',
+  // 0x - Avalanche only
+  TraderJoe: 'Trader Joe',
+  TraderJoeV2_1: 'Trader Joe v2.1',
   // 0x - BSC only
   PancakeSwap: 'PancakeSwap',
   PancakeSwapV2: 'PancakeSwap v2',
