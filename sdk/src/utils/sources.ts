@@ -56,8 +56,8 @@ export const sources = {
   ONE_INCH_LP_1_1: '1inch LP v1.1',
   ONE_INCH_LP_MIGRATOR: 'Mooniswap Migrator',
   ONE_INCH_LP_MIGRATOR_V1_1: '1inch LP v1.0 Migrator',
-  PANCAKE_SWAP: 'Pancake Swap',
-  PANCAKE_SWAP_V3: 'Pancake Swap v3',
+  PANCAKE_SWAP: 'PancakeSwap',
+  PANCAKE_SWAP_V3: 'PancakeSwap v3',
   PMM1: 'PMM1',
   PMM2: 'PMM2',
   PMM3: 'PMM3',
@@ -91,7 +91,7 @@ export const sources = {
   ZRX: '0x',
   // 1inch - BSC only
   PANCAKE_STABLE: 'Pancake Stable',
-  PANCAKE_SWAP_V2: 'Pancake Swap v2',
+  PANCAKE_SWAP_V2: 'PancakeSwap v2',
   // 0x
   Native: 'Native',
   Uniswap: 'Uniswap',
@@ -129,8 +129,8 @@ export const sources = {
   Clipper: 'Clipper',
   // 0x - BSC only
   PancakeSwap: 'PancakeSwap',
-  PancakeSwapV2: 'PancakeSwap_V2',
-  PancakeSwapV3: 'PancakeSwap_V3',
+  PancakeSwapV2: 'PancakeSwap v2',
+  PancakeSwapV3: 'PancakeSwap v3',
   BakerySwap: 'BakerySwap',
   Nerve: 'Nerve',
   Belt: 'Belt',
