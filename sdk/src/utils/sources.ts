@@ -11,6 +11,7 @@ export const sources = {
   AAVE: 'Aave',
   AAVE_LIQUIDATOR: 'Aave Liquidator',
   AAVE_V2: 'Aave v2',
+  AAVE_V3: 'Aave v3',
   BALANCER: 'Balancer',
   BALANCER_V2: 'Balancer v2',
   BANCOR: 'Bancor',
@@ -93,6 +94,8 @@ export const sources = {
   PANCAKE_STABLE: 'Pancake Stable',
   PANCAKE_SWAP_V2: 'PancakeSwap v2',
   // 0x
+  AaveV2: 'Aave v2',
+  AaveV3: 'Aave v3',
   Native: 'Native',
   Uniswap: 'Uniswap',
   UniswapV2: 'Uniswap v2',
