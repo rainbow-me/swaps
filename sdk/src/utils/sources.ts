@@ -99,7 +99,7 @@ export const sources = {
   Eth2Dai: 'Eth2Dai',
   Kyber: 'Kyber',
   Curve: 'Curve',
-  LiquidityProvider: 'LiquidityProvider',
+  LiquidityProvider: 'LP',
   MultiBridge: 'MultiBridge',
   Balancer: 'Balancer',
   BalancerV2: 'Balancer v2',
