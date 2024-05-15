@@ -1,4 +1,11 @@
 /* eslint-disable sort-keys-fix/sort-keys-fix */
+
+// Source list must be manually updated with new liquidity sources
+// 0x: https://explorer.0xprotocol.org/liquiditySources
+// 1inch: https://docs.1inch.io/docs/educational-resources/intermediate/1inch-Liquidity-Sources/
+// Relay: https://docs.relay.link/what-is-relay
+// Accompanying badge icons should be updated at: https://github.com/rainbow-me/assets/tree/master/exchanges
+
 export const sources = {
   // 1inch
   AAVE: 'Aave',
