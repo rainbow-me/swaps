@@ -116,6 +116,7 @@ export const sources = {
   Mooniswap: 'Mooniswap',
   MultiHop: 'MultiHop',
   Shell: 'Shell',
+  Synapse: 'Synapse',
   Swerve: 'Swerve',
   SnowSwap: 'SnowSwap',
   SushiSwap: 'SushiSwap',
