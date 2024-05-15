@@ -90,6 +90,9 @@ export const sources = {
   WSTETH: 'wstETH',
   XSIGMA: 'xSigma',
   ZRX: '0x',
+  // 1inch - Polygon only
+  QUICKSWAP: 'QuickSwap',
+  QUICKSWAP_V3: 'QuickSwap v3',
   // 1inch - BSC only
   PANCAKE_STABLE: 'Pancake Stable',
   PANCAKE_SWAP_V2: 'PancakeSwap v2',
@@ -145,6 +148,7 @@ export const sources = {
   ACryptos: 'ACryptoS',
   // 0x - Polygon only
   QuickSwap: 'QuickSwap',
+  QuickSwapV3: 'QuickSwap',
   ComethSwap: 'ComethSwap',
   Dfyn: 'Dfyn',
   WaultSwap: 'WaultSwap',
