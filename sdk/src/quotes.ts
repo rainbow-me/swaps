@@ -119,9 +119,10 @@ const buildRainbowQuoteUrl = ({
  * @param {EthereumAddress} params.fromAddress
  * @param {number} params.slippage
  * @param {boolean} params.refuel
+ * @param {number?} params.feePercentageBasisPoints
  * @returns {string}
  */
-const buildRainbowCrosschainQuoteUrl = ({
+export const buildRainbowCrosschainQuoteUrl = ({
   chainId,
   toChainId,
   sellTokenAddress,
@@ -130,6 +131,7 @@ const buildRainbowCrosschainQuoteUrl = ({
   fromAddress,
   slippage,
   refuel,
+  feePercentageBasisPoints,
 }: {
   chainId: number;
   toChainId?: number;
@@ -139,6 +141,7 @@ const buildRainbowCrosschainQuoteUrl = ({
   fromAddress: EthereumAddress;
   slippage: number;
   refuel?: boolean;
+  feePercentageBasisPoints?: number;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
@@ -150,6 +153,9 @@ const buildRainbowCrosschainQuoteUrl = ({
     slippage: String(slippage),
     swapType: SwapType.crossChain,
     toChainId: String(toChainId),
+    ...(feePercentageBasisPoints !== undefined
+      ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
+      : {}),
   });
   return `${API_BASE_URL}/v1/quote?bridgeVersion=3&` + searchParams.toString();
 };
@@ -297,6 +303,7 @@ export const getCrosschainQuote = async (
     sellAmount,
     slippage,
     refuel = false,
+    feePercentageBasisPoints,
   } = params;
 
   if (!sellAmount || !toChainId) {
@@ -306,6 +313,7 @@ export const getCrosschainQuote = async (
   const url = buildRainbowCrosschainQuoteUrl({
     buyTokenAddress,
     chainId,
+    feePercentageBasisPoints,
     fromAddress,
     refuel,
     sellAmount,
