@@ -161,6 +161,45 @@ export const buildRainbowCrosschainQuoteUrl = ({
 };
 
 /**
+ * Function to build the swap API URI to get the claim bridge quote
+ */
+export const buildRainbowClaimBridgeQuoteUrl = ({
+  chainId,
+  toChainId,
+  sellTokenAddress,
+  buyTokenAddress,
+  sellAmount,
+  fromAddress,
+  slippage,
+  refuel,
+}: {
+  chainId: number;
+  toChainId?: number;
+  sellTokenAddress: EthereumAddress;
+  buyTokenAddress: EthereumAddress;
+  sellAmount?: BigNumberish;
+  fromAddress: EthereumAddress;
+  slippage: number;
+  refuel?: boolean;
+}) => {
+  const searchParams = new URLSearchParams({
+    buyToken: buyTokenAddress,
+    chainId: String(chainId),
+    claim: String(true),
+    feePercentageBasisPoints: '0',
+    fromAddress,
+    refuel: String(refuel),
+    sellAmount: String(sellAmount),
+    sellToken: sellTokenAddress,
+    slippage: String(slippage),
+    source: Source.CrosschainAggregatorRelay.toString(),
+    swapType: SwapType.crossChain,
+    toChainId: String(toChainId),
+  });
+  return `${API_BASE_URL}/v1/quote?bridgeVersion=3&` + searchParams.toString();
+};
+
+/**
  * Function to get a minimum amount of source chain gas token to perform a refuel swap
  *
  * @param {ChainId} params.chainId
@@ -322,7 +361,51 @@ export const getCrosschainQuote = async (
     toChainId,
   });
 
-  const response = await fetch(url);
+  return fetchAndSanityCheckCrosschainQuote(url);
+};
+
+/**
+ * Function to get a crosschain swap quote from rainbow's swap aggregator backend
+ */
+export const getClaimBridgeQuote = async (
+  params: QuoteParams
+): Promise<CrosschainQuote | QuoteError | null> => {
+  const {
+    chainId = ChainId.optimism,
+    toChainId,
+    fromAddress,
+    sellTokenAddress,
+    buyTokenAddress,
+    sellAmount,
+    slippage,
+    refuel = false,
+  } = params;
+
+  if (!sellAmount || !toChainId) {
+    return null;
+  }
+
+  const url = buildRainbowClaimBridgeQuoteUrl({
+    buyTokenAddress,
+    chainId,
+    fromAddress,
+    refuel,
+    sellAmount,
+    sellTokenAddress,
+    slippage,
+    toChainId,
+  });
+
+  return fetchAndSanityCheckCrosschainQuote(url);
+};
+
+/**
+ * Function to encapsulate logic to fetch and check a crosschain quote
+ */
+const fetchAndSanityCheckCrosschainQuote = async (
+  crosschainQuoteURL: string
+): Promise<CrosschainQuote | QuoteError | null> => {
+  const response = await fetch(crosschainQuoteURL);
   const quote = await response.json();
   if (quote.error) {
     return quote as QuoteError;
@@ -363,7 +446,7 @@ const calculateDeadline = async (wallet: Wallet) => {
  * @param {TransactionOptions} transactionOptions
  * @param {Signer} wallet
  * @param {boolean} permit
- * @param {number} ChainId
+ * @param {number} chainId
  * @param {string} referrer
  * @returns {Promise<Transaction>}
  */
