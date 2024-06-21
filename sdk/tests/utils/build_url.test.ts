@@ -1,4 +1,7 @@
-import {buildRainbowClaimBridgeQuoteUrl, buildRainbowCrosschainQuoteUrl} from '../../src';
+import {
+  buildRainbowClaimBridgeQuoteUrl,
+  buildRainbowCrosschainQuoteUrl,
+} from '../../src';
 
 describe('when creating crosschain swap URL', () => {
   it('should consider feePercentageBasisPoints if passed', () => {
