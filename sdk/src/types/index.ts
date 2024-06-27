@@ -78,6 +78,7 @@ export interface Quote {
   buyTokenAddress: EthereumAddress;
   buyAmount: BigNumberish;
   buyAmountDisplay: BigNumberish;
+  buyAmountDisplayMinimum: BigNumberish;
   buyAmountInEth: BigNumberish;
   buyAmountMinusFees: BigNumberish;
   fee: BigNumberish;
