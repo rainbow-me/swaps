@@ -72,6 +72,7 @@ const buildRainbowQuoteUrl = ({
   source,
   feePercentageBasisPoints,
   slippage,
+  currency,
 }: {
   chainId: number;
   toChainId?: number;
@@ -83,10 +84,12 @@ const buildRainbowQuoteUrl = ({
   feePercentageBasisPoints?: number;
   source?: Source;
   slippage: number;
+  currency: string;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
+    currency,
     enableZoraSwaps: String(true),
     fromAddress,
     sellToken: sellTokenAddress,
@@ -132,6 +135,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
   slippage,
   refuel,
   feePercentageBasisPoints,
+  currency,
 }: {
   chainId: number;
   toChainId?: number;
@@ -142,10 +146,12 @@ export const buildRainbowCrosschainQuoteUrl = ({
   slippage: number;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
+  currency: string;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
+    currency,
     fromAddress,
     refuel: String(refuel),
     sellAmount: String(sellAmount),
@@ -172,6 +178,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
   fromAddress,
   slippage,
   refuel,
+  currency,
 }: {
   chainId: number;
   toChainId?: number;
@@ -181,11 +188,13 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
   fromAddress: EthereumAddress;
   slippage: number;
   refuel?: boolean;
+  currency: string;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
     claim: String(true),
+    currency,
     feePercentageBasisPoints: '0',
     fromAddress,
     refuel: String(refuel),
@@ -258,6 +267,7 @@ export const getQuote = async (
     buyAmount,
     slippage,
     feePercentageBasisPoints,
+    currency,
   } = params;
   // When wrapping or unwrapping ETH, the quote is always 1:1
   // so we don't need to call our backend.
@@ -298,6 +308,7 @@ export const getQuote = async (
     buyAmount,
     buyTokenAddress,
     chainId,
+    currency,
     feePercentageBasisPoints,
     fromAddress,
     sellAmount,
@@ -336,6 +347,7 @@ export const getCrosschainQuote = async (
   const {
     chainId = ChainId.mainnet,
     toChainId,
+    currency,
     fromAddress,
     sellTokenAddress,
     buyTokenAddress,
@@ -352,6 +364,7 @@ export const getCrosschainQuote = async (
   const url = buildRainbowCrosschainQuoteUrl({
     buyTokenAddress,
     chainId,
+    currency,
     feePercentageBasisPoints,
     fromAddress,
     refuel,
@@ -373,6 +386,7 @@ export const getClaimBridgeQuote = async (
   const {
     chainId = ChainId.optimism,
     toChainId,
+    currency,
     fromAddress,
     sellTokenAddress,
     buyTokenAddress,
@@ -388,6 +402,7 @@ export const getClaimBridgeQuote = async (
   const url = buildRainbowClaimBridgeQuoteUrl({
     buyTokenAddress,
     chainId,
+    currency,
     fromAddress,
     refuel,
     sellAmount,

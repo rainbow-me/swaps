@@ -19,14 +19,61 @@ function getQuote(
   return {
     buyAmount: '',
     buyAmountDisplay: '',
+    buyAmountDisplayMinimum: '',
     buyAmountInEth: '',
     buyAmountMinusFees: '',
     buyTokenAddress: '' as EthereumAddress,
+    buyTokenAsset: {
+      assetCode: '',
+      chainId: chainID,
+      decimals: 18,
+      iconUrl: '',
+      name: '',
+      network: '',
+      networks: {
+        '1': {
+          address: '',
+          decimals: 18,
+        },
+      },
+      price: {
+        available: false,
+        value: 0,
+      },
+      symbol: '',
+      totalPrice: {
+        available: false,
+        value: 0,
+      },
+    },
     chainId: chainID,
     data: data,
     fee: '',
     feeInEth: '',
     feePercentageBasisPoints: 0,
+    feeTokenAsset: {
+      assetCode: '',
+      chainId: chainID,
+      decimals: 18,
+      iconUrl: '',
+      name: '',
+      network: '',
+      networks: {
+        '1': {
+          address: '',
+          decimals: 18,
+        },
+      },
+      price: {
+        available: false,
+        value: 0,
+      },
+      symbol: '',
+      totalPrice: {
+        available: false,
+        value: 0,
+      },
+    },
     from: '',
     fromAsset: {
       address: '',
@@ -47,6 +94,29 @@ function getQuote(
     sellAmountInEth: '',
     sellAmountMinusFees: '',
     sellTokenAddress: sellTokenAddress as EthereumAddress,
+    sellTokenAsset: {
+      assetCode: '',
+      chainId: chainID,
+      decimals: 18,
+      iconUrl: '',
+      name: '',
+      network: '',
+      networks: {
+        '1': {
+          address: '',
+          decimals: 18,
+        },
+      },
+      price: {
+        available: false,
+        value: 0,
+      },
+      symbol: '',
+      totalPrice: {
+        available: false,
+        value: 0,
+      },
+    },
     source: source,
     to: to,
     toAsset: {
