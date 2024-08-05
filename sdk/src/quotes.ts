@@ -194,7 +194,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
     claim: String(true),
-    currency: currency,
+    currency,
     feePercentageBasisPoints: '0',
     fromAddress,
     refuel: String(refuel),
