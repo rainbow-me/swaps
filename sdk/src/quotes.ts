@@ -151,7 +151,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
-    currency: currency,
+    currency,
     fromAddress,
     refuel: String(refuel),
     sellAmount: String(sellAmount),
