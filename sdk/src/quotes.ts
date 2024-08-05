@@ -89,7 +89,7 @@ const buildRainbowQuoteUrl = ({
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
-    currency: currency,
+    currency,
     enableZoraSwaps: String(true),
     fromAddress,
     sellToken: sellTokenAddress,
