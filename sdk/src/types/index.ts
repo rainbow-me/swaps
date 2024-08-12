@@ -51,6 +51,7 @@ export interface QuoteParams {
   swapType: SwapType;
   feePercentageBasisPoints?: number;
   toChainId?: number;
+  currency: string;
 }
 
 export interface ProtocolShare {
@@ -75,13 +76,16 @@ export interface Quote {
   sellAmountInEth: BigNumberish;
   sellAmountMinusFees: BigNumberish;
   sellTokenAddress: EthereumAddress;
+  sellTokenAsset: TokenAsset;
   buyTokenAddress: EthereumAddress;
+  buyTokenAsset: TokenAsset;
   buyAmount: BigNumberish;
   buyAmountDisplay: BigNumberish;
   buyAmountDisplayMinimum: BigNumberish;
   buyAmountInEth: BigNumberish;
   buyAmountMinusFees: BigNumberish;
   fee: BigNumberish;
+  feeTokenAsset: TokenAsset;
   feeInEth: BigNumberish;
   feePercentageBasisPoints: number;
   protocols?: ProtocolShare[];
@@ -93,6 +97,25 @@ export interface Quote {
   rewards?: Reward[];
   chainId: number;
 }
+
+export interface TokenAsset {
+  assetCode: string;
+  decimals: number;
+  iconUrl: string;
+  name: string;
+  network: string;
+  symbol: string;
+  networks: Partial<Record<ChainId, { address: string; decimals: number }>>;
+  chainId: ChainId;
+  price: TokenPrice;
+  totalPrice: TokenPrice;
+}
+
+export interface TokenPrice {
+  value: number;
+  available: boolean;
+}
+
 export interface Reward {
   amount: number;
   token: {
