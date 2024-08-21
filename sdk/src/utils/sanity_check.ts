@@ -13,7 +13,7 @@ import {
  * @param quoteSource The aggregator used for the quote.
  * @param chainID The origin network chain ID for the quote.
  * @param assertedAddress The destination address provided by the quote.
- * @returns {string, boolean} The destination address stored in the SDK for the provided (source, chainID) combination.
+ * @returns {string} The destination address stored in the SDK for the provided (source, chainID) combination.
  * And if it should be overridden in the quote.
  * @throws {Error} Throws an error if any of the following conditions are met:
  *   - The quote's destination address is undefined.
@@ -24,19 +24,13 @@ export function sanityCheckAddress(
   quoteSource: Source | undefined,
   chainID: ChainId,
   assertedAddress: string | undefined
-): {
-  expectedAddress: string;
-  shouldOverride: boolean;
-} {
+): string {
   if (assertedAddress === undefined || assertedAddress === '') {
     throw new Error(
       `quote's destination addresses must be defined (API Response)`
     );
   }
-  const { expectedAddress, shouldOverride } = getExpectedDestinationAddress(
-    quoteSource,
-    chainID
-  );
+  const expectedAddress = getExpectedDestinationAddress(quoteSource, chainID);
   if (expectedAddress === undefined || expectedAddress === '') {
     throw new Error(
       `expected source ${quoteSource}'s destination address on chainID ${chainID} must be defined (Swap SDK)`
@@ -47,7 +41,7 @@ export function sanityCheckAddress(
       `source ${quoteSource}'s destination address '${assertedAddress}' on chainID ${chainID} is not consistent, expected: '${expectedAddress}'`
     );
   }
-  return { expectedAddress, shouldOverride };
+  return expectedAddress;
 }
 
 /**
@@ -137,31 +131,18 @@ export function decodeERC20TransferToData(
  *
  * @param quoteSource The aggregator used for the quote.
  * @param chainID The origin network chain ID for the quote.
- * @returns {string | undefined, boolean} The destination address stored in the SDK for the provided (source, chainID)
- * combination and if we need to overwrite it on the quote.
- * Returns `undefined` if there is no address for the specified combination.
+ * @returns {string | undefined} The destination address stored in the SDK for the provided (source, chainID)
+ * combination. Returns `undefined` if there is no address for the specified combination.
  */
 export function getExpectedDestinationAddress(
   quoteSource: Source | undefined,
   chainID: ChainId
-): {
-  expectedAddress: string | undefined;
-  shouldOverride: boolean;
-} {
+): string | undefined {
   const validSource = quoteSource !== undefined;
   if (validSource && quoteSource === Source.CrosschainAggregatorSocket) {
-    return {
-      expectedAddress: SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainID),
-      shouldOverride: true,
-    };
+    return SOCKET_GATEWAY_CONTRACT_ADDRESSESS.get(chainID);
   } else if (validSource && quoteSource === Source.CrosschainAggregatorRelay) {
-    return {
-      expectedAddress: RELAY_LINK_BRIDGING_RELAYER_ADDRESS,
-      shouldOverride: false,
-    };
+    return RELAY_LINK_BRIDGING_RELAYER_ADDRESS;
   }
-  return {
-    expectedAddress: undefined,
-    shouldOverride: false,
-  };
+  return undefined;
 }

@@ -177,10 +177,7 @@ describe('getExpectedDestinationAddress', () => {
         Source.CrosschainAggregatorSocket,
         ChainId.mainnet
       )
-    ).toEqual({
-      expectedAddress: '0x3a23F943181408EAC424116Af7b7790c94Cb97a5',
-      shouldOverride: true,
-    });
+    ).toEqual('0x3a23F943181408EAC424116Af7b7790c94Cb97a5');
   });
   it('should return expected and false for relay', () => {
     expect(
@@ -188,10 +185,7 @@ describe('getExpectedDestinationAddress', () => {
         Source.CrosschainAggregatorRelay,
         ChainId.mainnet
       )
-    ).toEqual({
-      expectedAddress: '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF',
-      shouldOverride: false,
-    });
+    ).toEqual('0xf70da97812CB96acDF810712Aa562db8dfA3dbEF');
   });
 });
 
@@ -203,10 +197,7 @@ describe('sanityCheckAddress', () => {
         ChainId.mainnet,
         '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'
       )
-    ).toEqual({
-      expectedAddress: '0x3a23F943181408EAC424116Af7b7790c94Cb97a5',
-      shouldOverride: true,
-    });
+    ).toEqual('0x3a23F943181408EAC424116Af7b7790c94Cb97a5');
   });
   it('should return expected and false for relay', () => {
     expect(
@@ -215,9 +206,6 @@ describe('sanityCheckAddress', () => {
         ChainId.mainnet,
         '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF'
       )
-    ).toEqual({
-      expectedAddress: '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF',
-      shouldOverride: false,
-    });
+    ).toEqual('0xf70da97812CB96acDF810712Aa562db8dfA3dbEF');
   });
 });
