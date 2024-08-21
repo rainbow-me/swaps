@@ -285,8 +285,12 @@ export const getQuote = async (
   if (isWrap || isUnwrap) {
     return {
       buyAmount: sellAmount || buyAmount,
+      buyAmountDisplay: sellAmount || buyAmount,
+      buyAmountDisplayMinimum: sellAmount || buyAmount,
+      buyAmountInEth: sellAmount || buyAmount,
       buyAmountMinusFees: sellAmount || buyAmount,
       buyTokenAddress,
+      chainId,
       defaultGasLimit: isWrap ? '30000' : '40000',
       fee: 0,
       feeInEth: 0,
@@ -295,8 +299,11 @@ export const getQuote = async (
       inputTokenDecimals: 18,
       outputTokenDecimals: 18,
       sellAmount: sellAmount || buyAmount,
+      sellAmountDisplay: sellAmount || buyAmount,
+      sellAmountInEth: sellAmount || buyAmount,
       sellAmountMinusFees: sellAmount || buyAmount,
       sellTokenAddress,
+      tradeAmountUSD: 0,
     } as Quote;
   }
 
