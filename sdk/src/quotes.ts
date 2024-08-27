@@ -269,8 +269,7 @@ export const getQuote = async (
     feePercentageBasisPoints,
     currency,
   } = params;
-  // When wrapping or unwrapping ETH, the quote is always 1:1
-  // so we don't need to call our backend.
+
   const sellTokenAddressLowercase = sellTokenAddress.toLowerCase();
   const buyTokenAddressLowercase = buyTokenAddress.toLowerCase();
   const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
@@ -282,13 +281,22 @@ export const getQuote = async (
     sellTokenAddressLowercase === wrappedAssetLowercase &&
     buyTokenAddressLowercase === ethAddressLowerCase;
 
+  // When wrapping or unwrapping ETH, the quote is always 1:1
+  // so we don't need to call our backend.
   if (isWrap || isUnwrap) {
+    const amount = sellAmount || buyAmount;
+    // For wrapping/unwrapping, we need either sell amount or buy amount
+    if (!amount) {
+      return null;
+    }
+
+
     return {
-      buyAmount: sellAmount || buyAmount,
-      buyAmountDisplay: sellAmount || buyAmount,
-      buyAmountDisplayMinimum: sellAmount || buyAmount,
-      buyAmountInEth: sellAmount || buyAmount,
-      buyAmountMinusFees: sellAmount || buyAmount,
+      buyAmount: amount,
+      buyAmountDisplay: amount,
+      buyAmountDisplayMinimum: amount,
+      buyAmountInEth: amount,
+      buyAmountMinusFees: amount,
       buyTokenAddress,
       chainId,
       defaultGasLimit: isWrap ? '30000' : '40000',
@@ -298,13 +306,13 @@ export const getQuote = async (
       from: fromAddress,
       inputTokenDecimals: 18,
       outputTokenDecimals: 18,
-      sellAmount: sellAmount || buyAmount,
-      sellAmountDisplay: sellAmount || buyAmount,
-      sellAmountInEth: sellAmount || buyAmount,
-      sellAmountMinusFees: sellAmount || buyAmount,
+      sellAmount: amount,
+      sellAmountDisplay: amount,
+      sellAmountInEth: amount,
+      sellAmountMinusFees: amount,
       sellTokenAddress,
       tradeAmountUSD: 0,
-    } as Quote;
+    };
   }
 
   if (isNaN(Number(sellAmount)) && isNaN(Number(buyAmount))) {
