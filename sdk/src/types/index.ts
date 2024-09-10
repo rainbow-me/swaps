@@ -94,6 +94,7 @@ export interface Quote {
   defaultGasLimit?: string;
   swapType?: string;
   tradeAmountUSD: number;
+  tradeFeeAmountUSD: number;
   rewards?: Reward[];
   chainId: number;
 }

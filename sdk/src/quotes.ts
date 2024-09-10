@@ -290,7 +290,6 @@ export const getQuote = async (
       return null;
     }
 
-
     return {
       buyAmount: amount,
       buyAmountDisplay: amount,
@@ -312,6 +311,7 @@ export const getQuote = async (
       sellAmountMinusFees: amount,
       sellTokenAddress,
       tradeAmountUSD: 0,
+      tradeFeeAmountUSD: 0,
     };
   }
 
