@@ -76,16 +76,16 @@ export interface Quote {
   sellAmountInEth: BigNumberish;
   sellAmountMinusFees: BigNumberish;
   sellTokenAddress: EthereumAddress;
-  sellTokenAsset: TokenAsset;
+  sellTokenAsset?: TokenAsset;
   buyTokenAddress: EthereumAddress;
-  buyTokenAsset: TokenAsset;
+  buyTokenAsset?: TokenAsset;
   buyAmount: BigNumberish;
   buyAmountDisplay: BigNumberish;
   buyAmountDisplayMinimum: BigNumberish;
   buyAmountInEth: BigNumberish;
   buyAmountMinusFees: BigNumberish;
   fee: BigNumberish;
-  feeTokenAsset: TokenAsset;
+  feeTokenAsset?: TokenAsset;
   feeInEth: BigNumberish;
   feePercentageBasisPoints: number;
   protocols?: ProtocolShare[];
@@ -94,6 +94,7 @@ export interface Quote {
   defaultGasLimit?: string;
   swapType?: string;
   tradeAmountUSD: number;
+  tradeFeeAmountUSD: number;
   rewards?: Reward[];
   chainId: number;
 }

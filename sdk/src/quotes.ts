@@ -269,8 +269,7 @@ export const getQuote = async (
     feePercentageBasisPoints,
     currency,
   } = params;
-  // When wrapping or unwrapping ETH, the quote is always 1:1
-  // so we don't need to call our backend.
+
   const sellTokenAddressLowercase = sellTokenAddress.toLowerCase();
   const buyTokenAddressLowercase = buyTokenAddress.toLowerCase();
   const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
@@ -282,11 +281,23 @@ export const getQuote = async (
     sellTokenAddressLowercase === wrappedAssetLowercase &&
     buyTokenAddressLowercase === ethAddressLowerCase;
 
+  // When wrapping or unwrapping ETH, the quote is always 1:1
+  // so we don't need to call our backend.
   if (isWrap || isUnwrap) {
+    const amount = sellAmount || buyAmount;
+    // For wrapping/unwrapping, we need either sell amount or buy amount
+    if (!amount) {
+      return null;
+    }
+
     return {
-      buyAmount: sellAmount || buyAmount,
-      buyAmountMinusFees: sellAmount || buyAmount,
+      buyAmount: amount,
+      buyAmountDisplay: amount,
+      buyAmountDisplayMinimum: amount,
+      buyAmountInEth: amount,
+      buyAmountMinusFees: amount,
       buyTokenAddress,
+      chainId,
       defaultGasLimit: isWrap ? '30000' : '40000',
       fee: 0,
       feeInEth: 0,
@@ -294,10 +305,14 @@ export const getQuote = async (
       from: fromAddress,
       inputTokenDecimals: 18,
       outputTokenDecimals: 18,
-      sellAmount: sellAmount || buyAmount,
-      sellAmountMinusFees: sellAmount || buyAmount,
+      sellAmount: amount,
+      sellAmountDisplay: amount,
+      sellAmountInEth: amount,
+      sellAmountMinusFees: amount,
       sellTokenAddress,
-    } as Quote;
+      tradeAmountUSD: 0,
+      tradeFeeAmountUSD: 0,
+    };
   }
 
   if (isNaN(Number(sellAmount)) && isNaN(Number(buyAmount))) {
@@ -428,14 +443,11 @@ const fetchAndSanityCheckCrosschainQuote = async (
 
   const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
   try {
-    const { expectedAddress, shouldOverride } = sanityCheckAddress(
+    quoteWithRestrictedAllowanceTarget.allowanceTarget = sanityCheckAddress(
       quoteWithRestrictedAllowanceTarget.source,
       quoteWithRestrictedAllowanceTarget.chainId,
       quoteWithRestrictedAllowanceTarget.allowanceTarget
     );
-    if (shouldOverride) {
-      quoteWithRestrictedAllowanceTarget.allowanceTarget = expectedAddress;
-    }
   } catch (e) {
     return {
       error: true,
@@ -617,15 +629,11 @@ export const fillCrosschainQuote = async (
 ): Promise<Transaction> => {
   const { data, from, value } = quote;
 
-  let to = quote.to;
-  const { expectedAddress, shouldOverride } = sanityCheckAddress(
+  const to = sanityCheckAddress(
     quote.source,
     quote.fromChainId,
     extractDestinationAddress(quote)
   );
-  if (shouldOverride) {
-    to = expectedAddress;
-  }
 
   let txData = data;
   if (referrer) {
@@ -725,15 +733,11 @@ export const getCrosschainQuoteExecutionDetails = (
 ): CrosschainQuoteExecutionDetails => {
   const { from, data, value } = quote;
 
-  let to = quote.to;
-  const { expectedAddress, shouldOverride } = sanityCheckAddress(
+  const to = sanityCheckAddress(
     quote.source,
     quote.fromChainId,
     extractDestinationAddress(quote)
   );
-  if (shouldOverride) {
-    to = expectedAddress;
-  }
 
   return {
     method: provider.estimateGas({
