@@ -131,6 +131,7 @@ function getQuote(
     },
     toChainId: 0,
     tradeAmountUSD: 0,
+    tradeFeeAmountUSD: 0,
   };
 }
 
