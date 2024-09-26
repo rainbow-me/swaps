@@ -19,6 +19,7 @@ export const SOCKET_GATEWAY_CONTRACT_ADDRESSESS = new Map([
   [ChainId.base, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
   [ChainId.avalanche, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
   [ChainId.blast, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
+  [ChainId.apechain, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
 ]);
 
 // RELAY_LINK_BRIDGING_RELAYER_ADDRESS is the EOA used by relay link as relayer on all chains
@@ -42,6 +43,7 @@ export const WRAPPED_ASSET: MultiChainAsset = {
   [`${ChainId.avalanche}`]: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
   [`${ChainId.blast}`]: '0x4300000000000000000000000000000000000004',
   [`${ChainId.degen}`]: '0xeb54dacb4c2ccb64f8074eceea33b5ebb38e5387',
+  [`${ChainId.apechain}`]: '0x8643a49363e80c7a15790703b915d1b0b6b71d56',
 };
 
 export const DAI: MultiChainAsset = {
