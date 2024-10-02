@@ -383,21 +383,19 @@ const fetchAndSanityCheckCrosschainQuote = async (
     return quote as QuoteError;
   }
 
-  const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
   try {
-    sanityCheckAddress(quoteWithRestrictedAllowanceTarget?.to);
-    sanityCheckAddress(quoteWithRestrictedAllowanceTarget?.allowanceTarget);
+    sanityCheckAddress(quote?.to);
   } catch (e) {
     return {
       error: true,
       message:
         e instanceof Error
           ? e.message
-          : `unexpected error happened while checking crosschain quote's address: ${quoteWithRestrictedAllowanceTarget.allowanceTarget}`,
+          : `unexpected error happened while checking crosschain quote's address: ${quote?.to}`,
     } as QuoteError;
   }
 
-  return quoteWithRestrictedAllowanceTarget;
+  return quote;
 };
 
 const calculateDeadline = async (wallet: Wallet) => {
@@ -569,7 +567,6 @@ export const fillCrosschainQuote = async (
   const { data, from, value } = quote;
 
   sanityCheckAddress(quote?.to);
-  sanityCheckAddress(quote?.allowanceTarget);
 
   let txData = data;
   if (referrer) {
@@ -670,7 +667,6 @@ export const getCrosschainQuoteExecutionDetails = (
   const { from, data, value } = quote;
 
   sanityCheckAddress(quote?.to);
-  sanityCheckAddress(quote?.allowanceTarget);
 
   return {
     method: provider.estimateGas({

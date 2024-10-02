@@ -102,6 +102,8 @@ export interface Quote {
   tradeFeeAmountUSD: number;
   rewards?: Reward[];
   chainId: number;
+  allowanceTarget: string;
+  allowanceNeeded: boolean;
 }
 
 export interface TokenAsset {
@@ -263,9 +265,9 @@ export interface SocketChainsData {
 
 // CrosschainQuote holds additional fields relevant for crosschain swaps
 export interface CrosschainQuote extends Quote {
-  allowanceTarget?: string;
   routes: SocketRoute[];
   refuel: SocketRefuelData | null;
+  // @deprecated: use allowanceNeeded instead on parent Quote type
   no_approval: boolean | undefined;
 }
 
