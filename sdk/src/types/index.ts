@@ -34,10 +34,13 @@ export enum Source {
 export enum SwapType {
   normal = 'normal',
   crossChain = 'cross-chain',
+  wrap = 'wrap',
+  unwrap = 'unwrap',
 }
 
 export type EthereumAddress = string;
 
+// QuoteParams are the parameters required to get a quote from the Swap API
 export interface QuoteParams {
   source?: Source;
   chainId: number;
@@ -49,7 +52,6 @@ export interface QuoteParams {
   slippage: number;
   destReceiver?: EthereumAddress;
   refuel?: boolean;
-  swapType: SwapType;
   feePercentageBasisPoints?: number;
   toChainId?: number;
   currency: string;
@@ -60,12 +62,14 @@ export interface ProtocolShare {
   part: number;
 }
 
+// QuoteError is returned when a swap quote failed
 export interface QuoteError {
   error: boolean;
   error_code?: number;
   message: string;
 }
 
+// Quote is the response from the Swap API
 export interface Quote {
   source?: Source;
   from: EthereumAddress;
@@ -93,7 +97,7 @@ export interface Quote {
   inputTokenDecimals?: number;
   outputTokenDecimals?: number;
   defaultGasLimit?: string;
-  swapType?: string;
+  swapType: SwapType;
   tradeAmountUSD: number;
   tradeFeeAmountUSD: number;
   rewards?: Reward[];
@@ -257,11 +261,8 @@ export interface SocketChainsData {
   }[];
 }
 
+// CrosschainQuote holds additional fields relevant for crosschain swaps
 export interface CrosschainQuote extends Quote {
-  fromAsset: SocketAsset;
-  fromChainId: number;
-  toAsset: SocketAsset;
-  toChainId: number;
   allowanceTarget?: string;
   routes: SocketRoute[];
   refuel: SocketRefuelData | null;
