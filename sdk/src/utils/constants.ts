@@ -8,30 +8,13 @@ export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA =
   '0xa61550e9ddd2797e16489db09343162be98d9483';
 
-// SOCKET_GATEWAY_CONTRACT_ADDRESSES is mapped by int chain ID to avoid a breaking change
-export const SOCKET_GATEWAY_CONTRACT_ADDRESSESS = new Map([
-  [ChainId.mainnet, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.optimism, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.polygon, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.arbitrum, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.bsc, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.zora, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.base, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.avalanche, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.blast, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-  [ChainId.apechain, '0x3a23F943181408EAC424116Af7b7790c94Cb97a5'],
-]);
-
-// RELAY_LINK_BRIDGING_RELAYER_ADDRESS is the EOA used by relay link as relayer on all chains
-export const RELAY_LINK_BRIDGING_RELAYER_ADDRESS =
-  '0xf70da97812CB96acDF810712Aa562db8dfA3dbEF';
-
-export const ERC20_TRANSFER_SIGNATURE = `0xa9059cbb`;
-
 export type MultiChainAsset = {
   [key: string]: EthereumAddress;
 };
 
+/**
+ * @deprecated: Should not use this anymore to reduce friction for new network support
+ */
 export const WRAPPED_ASSET: MultiChainAsset = {
   [`${ChainId.mainnet}`]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   [`${ChainId.optimism}`]: '0x4200000000000000000000000000000000000006',

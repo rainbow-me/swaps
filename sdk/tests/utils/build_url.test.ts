@@ -19,7 +19,7 @@ describe('when creating crosschain swap URL', () => {
         toChainId: 137,
       })
     ).toEqual(
-      'https://swap.p.rainbow.me/v1/quote?bridgeVersion=3&buyToken=0x456&chainId=1&currency=usd&fromAddress=0x789&refuel=false&sellAmount=100&sellToken=0x123&slippage=2&swapType=cross-chain&toChainId=137&feePercentageBasisPoints=0'
+      'https://swap.p.rainbow.me/v1/quote?bridgeVersion=4&buyToken=0x456&chainId=1&currency=usd&fromAddress=0x789&refuel=false&sellAmount=100&sellToken=0x123&slippage=2&toChainId=137&feePercentageBasisPoints=0'
     );
   });
   it('should ignore feePercentageBasisPoints if not passed', () => {
@@ -37,7 +37,7 @@ describe('when creating crosschain swap URL', () => {
         toChainId: 137,
       })
     ).toEqual(
-      'https://swap.p.rainbow.me/v1/quote?bridgeVersion=3&buyToken=0x456&chainId=1&currency=usd&fromAddress=0x789&refuel=false&sellAmount=100&sellToken=0x123&slippage=2&swapType=cross-chain&toChainId=137'
+      'https://swap.p.rainbow.me/v1/quote?bridgeVersion=4&buyToken=0x456&chainId=1&currency=usd&fromAddress=0x789&refuel=false&sellAmount=100&sellToken=0x123&slippage=2&toChainId=137'
     );
   });
 });
@@ -57,7 +57,7 @@ describe('when creating claim bridge swap URL', () => {
         toChainId: 137,
       })
     ).toEqual(
-      'https://swap.p.rainbow.me/v1/quote?bridgeVersion=3&buyToken=0x456&chainId=1&claim=true&currency=usd&feePercentageBasisPoints=0&fromAddress=0x789&refuel=false&sellAmount=100&sellToken=0x123&slippage=2&source=relay&swapType=cross-chain&toChainId=137'
+      'https://swap.p.rainbow.me/v1/quote?bridgeVersion=4&buyToken=0x456&chainId=1&claim=true&currency=usd&feePercentageBasisPoints=0&fromAddress=0x789&refuel=false&sellAmount=100&sellToken=0x123&slippage=2&source=relay&toChainId=137'
     );
   });
 });

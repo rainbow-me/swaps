@@ -16,7 +16,6 @@ import {
   QuoteParams,
   SocketChainsData,
   Source,
-  SwapType,
   TransactionOptions,
 } from './types';
 import {
@@ -26,14 +25,10 @@ import {
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
-  WRAPPED_ASSET,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
-import {
-  extractDestinationAddress,
-  sanityCheckAddress,
-} from './utils/sanity_check';
+import { sanityCheckAddress } from './utils/sanity_check';
 
 /**
  * Function to get the rainbow router contract address based on the chainId
@@ -94,16 +89,10 @@ const buildRainbowQuoteUrl = ({
     fromAddress,
     sellToken: sellTokenAddress,
     slippage: String(slippage),
-    swapType: SwapType.normal,
     ...(source ? { source } : {}),
     ...(sellAmount
       ? { sellAmount: String(sellAmount) }
       : { buyAmount: String(buyAmount) }),
-    // When buying ETH, we need to tell the aggregator
-    // to return the funds to the contract if we need to take a fee
-    ...(buyTokenAddress === ETH_ADDRESS
-      ? { destReceiver: getRainbowRouterContractAddress(chainId) }
-      : {}),
     ...(feePercentageBasisPoints !== undefined
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
@@ -157,13 +146,12 @@ export const buildRainbowCrosschainQuoteUrl = ({
     sellAmount: String(sellAmount),
     sellToken: sellTokenAddress,
     slippage: String(slippage),
-    swapType: SwapType.crossChain,
     toChainId: String(toChainId),
     ...(feePercentageBasisPoints !== undefined
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
   });
-  return `${API_BASE_URL}/v1/quote?bridgeVersion=3&` + searchParams.toString();
+  return `${API_BASE_URL}/v1/quote?bridgeVersion=4&` + searchParams.toString();
 };
 
 /**
@@ -202,10 +190,9 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
     sellToken: sellTokenAddress,
     slippage: String(slippage),
     source: Source.CrosschainAggregatorRelay.toString(),
-    swapType: SwapType.crossChain,
     toChainId: String(toChainId),
   });
-  return `${API_BASE_URL}/v1/quote?bridgeVersion=3&` + searchParams.toString();
+  return `${API_BASE_URL}/v1/quote?bridgeVersion=4&` + searchParams.toString();
 };
 
 /**
@@ -269,51 +256,6 @@ export const getQuote = async (
     feePercentageBasisPoints,
     currency,
   } = params;
-
-  const sellTokenAddressLowercase = sellTokenAddress.toLowerCase();
-  const buyTokenAddressLowercase = buyTokenAddress.toLowerCase();
-  const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
-  const wrappedAssetLowercase = WRAPPED_ASSET[chainId]?.toLowerCase();
-  const isWrap =
-    sellTokenAddressLowercase === ethAddressLowerCase &&
-    buyTokenAddressLowercase === wrappedAssetLowercase;
-  const isUnwrap =
-    sellTokenAddressLowercase === wrappedAssetLowercase &&
-    buyTokenAddressLowercase === ethAddressLowerCase;
-
-  // When wrapping or unwrapping ETH, the quote is always 1:1
-  // so we don't need to call our backend.
-  if (isWrap || isUnwrap) {
-    const amount = sellAmount || buyAmount;
-    // For wrapping/unwrapping, we need either sell amount or buy amount
-    if (!amount) {
-      return null;
-    }
-
-    return {
-      buyAmount: amount,
-      buyAmountDisplay: amount,
-      buyAmountDisplayMinimum: amount,
-      buyAmountInEth: amount,
-      buyAmountMinusFees: amount,
-      buyTokenAddress,
-      chainId,
-      defaultGasLimit: isWrap ? '30000' : '40000',
-      fee: 0,
-      feeInEth: 0,
-      feePercentageBasisPoints: 0,
-      from: fromAddress,
-      inputTokenDecimals: 18,
-      outputTokenDecimals: 18,
-      sellAmount: amount,
-      sellAmountDisplay: amount,
-      sellAmountInEth: amount,
-      sellAmountMinusFees: amount,
-      sellTokenAddress,
-      tradeAmountUSD: 0,
-      tradeFeeAmountUSD: 0,
-    };
-  }
 
   if (isNaN(Number(sellAmount)) && isNaN(Number(buyAmount))) {
     return null;
@@ -441,24 +383,19 @@ const fetchAndSanityCheckCrosschainQuote = async (
     return quote as QuoteError;
   }
 
-  const quoteWithRestrictedAllowanceTarget = quote as CrosschainQuote;
   try {
-    quoteWithRestrictedAllowanceTarget.allowanceTarget = sanityCheckAddress(
-      quoteWithRestrictedAllowanceTarget.source,
-      quoteWithRestrictedAllowanceTarget.chainId,
-      quoteWithRestrictedAllowanceTarget.allowanceTarget
-    );
+    sanityCheckAddress(quote?.to);
   } catch (e) {
     return {
       error: true,
       message:
         e instanceof Error
           ? e.message
-          : `unexpected error happened while checking crosschain quote's address: ${quoteWithRestrictedAllowanceTarget.allowanceTarget}`,
+          : `unexpected error happened while checking crosschain quote's address: ${quote?.to}`,
     } as QuoteError;
   }
 
-  return quoteWithRestrictedAllowanceTarget;
+  return quote;
 };
 
 const calculateDeadline = async (wallet: Wallet) => {
@@ -629,11 +566,7 @@ export const fillCrosschainQuote = async (
 ): Promise<Transaction> => {
   const { data, from, value } = quote;
 
-  const to = sanityCheckAddress(
-    quote.source,
-    quote.fromChainId,
-    extractDestinationAddress(quote)
-  );
+  sanityCheckAddress(quote?.to);
 
   let txData = data;
   if (referrer) {
@@ -643,7 +576,7 @@ export const fillCrosschainQuote = async (
   const swapTx = await wallet.sendTransaction({
     data: txData,
     from,
-    to,
+    to: quote.to,
     ...{
       ...transactionOptions,
       value,
@@ -733,17 +666,13 @@ export const getCrosschainQuoteExecutionDetails = (
 ): CrosschainQuoteExecutionDetails => {
   const { from, data, value } = quote;
 
-  const to = sanityCheckAddress(
-    quote.source,
-    quote.fromChainId,
-    extractDestinationAddress(quote)
-  );
+  sanityCheckAddress(quote?.to);
 
   return {
     method: provider.estimateGas({
       data,
       from,
-      to,
+      to: quote.to,
       value,
     }),
     params: {
