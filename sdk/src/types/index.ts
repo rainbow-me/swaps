@@ -267,8 +267,6 @@ export interface SocketChainsData {
 export interface CrosschainQuote extends Quote {
   routes: SocketRoute[];
   refuel: SocketRefuelData | null;
-  // @deprecated: use allowanceNeeded instead on parent Quote type
-  no_approval: boolean | undefined;
 }
 
 export interface TransactionOptions {
