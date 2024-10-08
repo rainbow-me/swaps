@@ -35,7 +35,7 @@ import { sanityCheckAddress } from './utils/sanity_check';
  * Configure SDK for mocking or fallback to API_BASE_URL
  * 
  */
-let sdkConfig = {
+export let sdkConfig = {
   apiBaseUrl: API_BASE_URL
 };
 

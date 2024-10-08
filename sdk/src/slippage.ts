@@ -6,7 +6,7 @@ import {
   SlippageError,
   SlippageParams,
 } from './types';
-import { API_BASE_URL } from './utils/constants';
+import { sdkConfig } from './quotes';  // Adjust the import path as needed
 
 /**
  * Function to get a slippage formatted quote url to use with backend
@@ -43,7 +43,7 @@ const buildRainbowSlippageUrl = ({
       ? { sellAmount: String(sellAmount) }
       : { buyAmount: String(buyAmount) }),
   });
-  return `${API_BASE_URL}/v1/slippage?` + searchParams.toString();
+  return `${sdkConfig.apiBaseUrl}/v1/slippage?` + searchParams.toString();
 };
 
 /**
