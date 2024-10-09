@@ -6,7 +6,7 @@ import {
   SlippageError,
   SlippageParams,
 } from './types';
-import { sdkConfig } from './quotes';  // Adjust the import path as needed
+import { sdkConfig } from './quotes'; 
 
 /**
  * Function to get a slippage formatted quote url to use with backend
