@@ -30,6 +30,19 @@ import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
 import { sanityCheckAddress } from './utils/sanity_check';
 
+
+/**
+ * Configure SDK for mocking or fallback to API_BASE_URL
+ * 
+ */
+export let sdkConfig = {
+  apiBaseUrl: API_BASE_URL
+};
+
+export function configureSDK(options: { apiBaseUrl?: string }) {
+  sdkConfig = { ...sdkConfig, ...options };
+}
+
 /**
  * Function to get the rainbow router contract address based on the chainId
  *
@@ -97,7 +110,7 @@ const buildRainbowQuoteUrl = ({
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
   });
-  return `${API_BASE_URL}/v1/quote?` + searchParams.toString();
+  return `${sdkConfig.apiBaseUrl}/v1/quote?` + searchParams.toString();
 };
 
 /**
@@ -151,7 +164,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
   });
-  return `${API_BASE_URL}/v1/quote?bridgeVersion=4&` + searchParams.toString();
+  return `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` + searchParams.toString();
 };
 
 /**
@@ -192,7 +205,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
     source: Source.CrosschainAggregatorRelay.toString(),
     toChainId: String(toChainId),
   });
-  return `${API_BASE_URL}/v1/quote?bridgeVersion=4&` + searchParams.toString();
+  return `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` + searchParams.toString();
 };
 
 /**
@@ -207,7 +220,7 @@ export const getMinRefuelAmount = async (params: {
   toChainId: ChainId;
 }) => {
   const { chainId, toChainId } = params;
-  const url = `${API_BASE_URL}/v1/chains`;
+  const url = `${sdkConfig.apiBaseUrl}/v1/chains`;
   const response = await fetch(url);
   const chainsData = (await response.json()) as SocketChainsData;
 
