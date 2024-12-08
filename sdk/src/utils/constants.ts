@@ -12,23 +12,6 @@ export type MultiChainAsset = {
   [key: string]: EthereumAddress;
 };
 
-/**
- * @deprecated: Should not use this anymore to reduce friction for new network support
- */
-export const WRAPPED_ASSET: MultiChainAsset = {
-  [`${ChainId.mainnet}`]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-  [`${ChainId.optimism}`]: '0x4200000000000000000000000000000000000006',
-  [`${ChainId.polygon}`]: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
-  [`${ChainId.arbitrum}`]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
-  [`${ChainId.bsc}`]: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
-  [`${ChainId.zora}`]: '0x4200000000000000000000000000000000000006',
-  [`${ChainId.base}`]: '0x4200000000000000000000000000000000000006',
-  [`${ChainId.avalanche}`]: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
-  [`${ChainId.blast}`]: '0x4300000000000000000000000000000000000004',
-  [`${ChainId.degen}`]: '0xeb54dacb4c2ccb64f8074eceea33b5ebb38e5387',
-  [`${ChainId.apechain}`]: '0x8643a49363e80c7a15790703b915d1b0b6b71d56',
-};
-
 export const DAI: MultiChainAsset = {
   [`${ChainId.mainnet}`]: '0x6b175474e89094c44da98b954eedeac495271d0f',
 };
