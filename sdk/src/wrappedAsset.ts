@@ -4,24 +4,24 @@ import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
 import { default as WethAbi } from './abi/Weth.json';
-import { ChainId, TransactionOptions } from './types';
-import { WRAPPED_ASSET } from './utils/constants';
+import { EthereumAddress, TransactionOptions } from './types';
 
 /**
  * Function to wrap a specific amount of the native asset
  * for the specified wallet from its ERC20 version
  * @param {BigNumberish} amount
  * @param {Signer} wallet
+ * @param {EthereumAddress} wrappedAssetAddress
  * @returns {Promise<Transaction>}
  */
 export const wrapNativeAsset = async (
   amount: BigNumberish,
   wallet: Signer,
-  chainId: ChainId = ChainId.mainnet,
+  wrappedAssetAddress: EthereumAddress,
   transactionOptions: TransactionOptions = {}
 ): Promise<Transaction> => {
   const instance = new Contract(
-    WRAPPED_ASSET[chainId],
+    wrappedAssetAddress,
     JSON.stringify(WethAbi),
     wallet
   );
@@ -37,16 +37,17 @@ export const wrapNativeAsset = async (
  * for the specified wallet from its ERC20 version
  * @param {BigNumberish} amount
  * @param {Signer} wallet
+ * @param {EthereumAddress} wrappedAssetAddress
  * @returns {Promise<Transaction>}
  */
 export const unwrapNativeAsset = async (
   amount: BigNumberish,
   wallet: Signer,
-  chainId: ChainId = ChainId.mainnet,
+  wrappedAssetAddress: EthereumAddress,
   transactionOptions: TransactionOptions = {}
 ): Promise<Transaction> => {
   const instance = new Contract(
-    WRAPPED_ASSET[chainId],
+    wrappedAssetAddress,
     JSON.stringify(WethAbi),
     wallet
   );
@@ -59,15 +60,16 @@ export const unwrapNativeAsset = async (
  * function that wraps or unwraps, to be used by estimateGas calls
  * @param {string} name
  * @param {StaticJsonRpcProvider} provider
+ * @param {EthereumAddress} wrappedAssetAddress
  * @returns {Promise<Transaction>}
  */
 export const getWrappedAssetMethod = (
   name: string,
   provider: StaticJsonRpcProvider,
-  chainId: ChainId = ChainId.mainnet
+  wrappedAssetAddress: EthereumAddress
 ): any => {
   const instance = new Contract(
-    WRAPPED_ASSET[chainId],
+    wrappedAssetAddress,
     JSON.stringify(WethAbi),
     provider
   );
