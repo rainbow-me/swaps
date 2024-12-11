@@ -4,7 +4,7 @@ import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
 import { default as WethAbi } from './abi/Weth.json';
-import { EthereumAddress, TransactionOptions } from './types';
+import {EthereumAddress, Quote, SwapType, TransactionOptions} from './types';
 
 /**
  * Function to wrap a specific amount of the native asset
@@ -74,4 +74,22 @@ export const getWrappedAssetMethod = (
     provider
   );
   return instance.estimateGas[name];
+};
+
+/**
+ * Get the wrapped asset address from a quote on a wrap/unwrap
+ * @param quote
+ * @returns {EthereumAddress}
+ */
+export const getWrappedAssetAddress = (quote: Quote): EthereumAddress => {
+  switch (quote.swapType) {
+    case SwapType.wrap:
+      return quote.buyTokenAddress as EthereumAddress;
+    case SwapType.unwrap:
+      return quote.sellTokenAddress as EthereumAddress;
+    default:
+      throw new Error(
+        `Getting wrapped asset address on a ${quote.swapType} swap is not supported`
+      );
+  }
 };
