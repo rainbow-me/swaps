@@ -29,6 +29,7 @@ import {
 import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
 import { sanityCheckAddress } from './utils/sanity_check';
+import { checkSwapType } from './utils/check_swap_type';
 
 
 /**
@@ -435,6 +436,8 @@ export const fillQuote = async (
   chainId: ChainId,
   referrer?: string
 ): Promise<Transaction> => {
+  checkSwapType(quote?.swapType, false);
+
   const instance = new Contract(
     getRainbowRouterContractAddress(chainId),
     RainbowRouterABI,
@@ -580,6 +583,7 @@ export const fillCrosschainQuote = async (
   const { data, from, value } = quote;
 
   sanityCheckAddress(quote?.to);
+  checkSwapType(quote?.swapType, true);
 
   let txData = data;
   if (referrer) {
