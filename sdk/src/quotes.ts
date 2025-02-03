@@ -353,7 +353,8 @@ export const getCrosschainQuote = async (
  * Function to get a crosschain swap quote from rainbow's swap aggregator backend
  */
 export const getClaimBridgeQuote = async (
-  params: QuoteParams
+  params: QuoteParams,
+  abortSignal?: AbortSignal
 ): Promise<CrosschainQuote | QuoteError | null> => {
   const {
     chainId = ChainId.optimism,
@@ -383,7 +384,7 @@ export const getClaimBridgeQuote = async (
     toChainId,
   });
 
-  return fetchAndSanityCheckCrosschainQuote(url);
+  return fetchAndSanityCheckCrosschainQuote(url, abortSignal);
 };
 
 /**
