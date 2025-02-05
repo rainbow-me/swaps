@@ -255,7 +255,8 @@ export const getMinRefuelAmount = async (params: {
  * @returns {Promise<Quote | null>}
  */
 export const getQuote = async (
-  params: QuoteParams
+  params: QuoteParams,
+  abortSignal?: AbortSignal
 ): Promise<Quote | QuoteError | null> => {
   const {
     source,
@@ -287,7 +288,7 @@ export const getQuote = async (
     source,
   });
 
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: abortSignal });
   const quote = await response.json();
   if (quote.error) {
     return quote as QuoteError;
@@ -312,7 +313,8 @@ export const getQuote = async (
  *                                                         stored destination address
  */
 export const getCrosschainQuote = async (
-  params: QuoteParams
+  params: QuoteParams,
+  abortSignal?: AbortSignal
 ): Promise<CrosschainQuote | QuoteError | null> => {
   const {
     chainId = ChainId.mainnet,
@@ -344,14 +346,15 @@ export const getCrosschainQuote = async (
     toChainId,
   });
 
-  return fetchAndSanityCheckCrosschainQuote(url);
+  return fetchAndSanityCheckCrosschainQuote(url, abortSignal);
 };
 
 /**
  * Function to get a crosschain swap quote from rainbow's swap aggregator backend
  */
 export const getClaimBridgeQuote = async (
-  params: QuoteParams
+  params: QuoteParams,
+  abortSignal?: AbortSignal
 ): Promise<CrosschainQuote | QuoteError | null> => {
   const {
     chainId = ChainId.optimism,
@@ -381,16 +384,17 @@ export const getClaimBridgeQuote = async (
     toChainId,
   });
 
-  return fetchAndSanityCheckCrosschainQuote(url);
+  return fetchAndSanityCheckCrosschainQuote(url, abortSignal);
 };
 
 /**
  * Function to encapsulate logic to fetch and check a crosschain quote
  */
 const fetchAndSanityCheckCrosschainQuote = async (
-  crosschainQuoteURL: string
+  crosschainQuoteURL: string,
+  abortSignal?: AbortSignal
 ): Promise<CrosschainQuote | QuoteError | null> => {
-  const response = await fetch(crosschainQuoteURL);
+  const response = await fetch(crosschainQuoteURL, { signal: abortSignal });
   const quote = await response.json();
   if (quote.error) {
     return quote as QuoteError;
