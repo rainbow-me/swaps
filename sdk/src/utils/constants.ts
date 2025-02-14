@@ -8,6 +8,8 @@ export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA =
   '0xa61550e9ddd2797e16489db09343162be98d9483';
 
+export const RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN = '0x2a0332e28913a06fa924d40a3e2160f763010417';
+
 export type MultiChainAsset = {
   [key: string]: EthereumAddress;
 };
