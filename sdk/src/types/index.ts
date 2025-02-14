@@ -17,6 +17,7 @@ export enum ChainId {
   blast = 81457,
   degen = 666666666,
   apechain = 33139,
+  unichain = 130,
 }
 
 export enum Source {

@@ -24,6 +24,7 @@ import {
   MAX_INT,
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
+  RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
@@ -33,7 +34,7 @@ import { sanityCheckAddress } from './utils/sanity_check';
 
 /**
  * Configure SDK for mocking or fallback to API_BASE_URL
- * 
+ *
  */
 export let sdkConfig = {
   apiBaseUrl: API_BASE_URL
@@ -52,6 +53,8 @@ export function configureSDK(options: { apiBaseUrl?: string }) {
 export const getRainbowRouterContractAddress = (chainId: ChainId) => {
   if (chainId === ChainId.zora) {
     return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
+  } else if (chainId === ChainId.unichain) {
+    return RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN;
   }
   return RAINBOW_ROUTER_CONTRACT_ADDRESS;
 };
