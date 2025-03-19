@@ -5,6 +5,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
 import { Wallet } from '@ethersproject/wallet';
 import RainbowRouterABI from './abi/RainbowRouter.json';
+import SwapRouter02ABI from './abi/SwapRouter02.json';
 import {
   ChainId,
   CrosschainQuote,
@@ -471,11 +472,9 @@ export const fillQuote = async (
     throw new Error('Target contract unauthorized');
   }
 
-  const instance = new Contract(
-    getRainbowRouterContractAddress(chainId),
-    RainbowRouterABI,
-    wallet
-  );
+  const ABI = quote.fallback ? SwapRouter02ABI : RainbowRouterABI;
+  const instance = new Contract(targetContract, ABI, wallet);
+
   let swapTx;
 
   const {

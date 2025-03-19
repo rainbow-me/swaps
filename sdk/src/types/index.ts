@@ -107,6 +107,7 @@ export interface Quote {
   chainId: number;
   allowanceTarget: string;
   allowanceNeeded: boolean;
+  fallback?: boolean;
 }
 
 export interface TokenAsset {
