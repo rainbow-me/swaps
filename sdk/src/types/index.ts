@@ -18,6 +18,8 @@ export enum ChainId {
   degen = 666666666,
   apechain = 33139,
   unichain = 130,
+  ink = 57073,
+  berachain = 80094,
 }
 
 export enum Source {

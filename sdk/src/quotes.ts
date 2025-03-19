@@ -19,6 +19,7 @@ import {
   TransactionOptions,
 } from './types';
 import {
+  AMM_CONTRACT_ADDRESSES,
   API_BASE_URL,
   ETH_ADDRESS,
   MAX_INT,
@@ -31,13 +32,12 @@ import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
 import { sanityCheckAddress } from './utils/sanity_check';
 
-
 /**
  * Configure SDK for mocking or fallback to API_BASE_URL
  *
  */
 export let sdkConfig = {
-  apiBaseUrl: API_BASE_URL
+  apiBaseUrl: API_BASE_URL,
 };
 
 export function configureSDK(options: { apiBaseUrl?: string }) {
@@ -57,6 +57,16 @@ export const getRainbowRouterContractAddress = (chainId: ChainId) => {
     return RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN;
   }
   return RAINBOW_ROUTER_CONTRACT_ADDRESS;
+};
+
+/**
+ * Function to get the amm contract address based on the chainId
+ *
+ * @param {ChainId} chainId
+ * @returns {string}
+ */
+export const getAmmContractAddress = (chainId: ChainId) => {
+  return AMM_CONTRACT_ADDRESSES[chainId];
 };
 
 /**
@@ -102,6 +112,7 @@ const buildRainbowQuoteUrl = ({
     chainId: String(chainId),
     currency,
     enableZoraSwaps: String(true),
+    fallback: String(true),
     fromAddress,
     sellToken: sellTokenAddress,
     slippage: String(slippage),
@@ -167,7 +178,10 @@ export const buildRainbowCrosschainQuoteUrl = ({
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
   });
-  return `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` + searchParams.toString();
+  return (
+    `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` +
+    searchParams.toString()
+  );
 };
 
 /**
@@ -208,7 +222,10 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
     source: Source.CrosschainAggregatorRelay.toString(),
     toChainId: String(toChainId),
   });
-  return `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` + searchParams.toString();
+  return (
+    `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` +
+    searchParams.toString()
+  );
 };
 
 /**
@@ -423,6 +440,13 @@ const calculateDeadline = async (wallet: Wallet) => {
   return timestamp + PERMIT_EXPIRATION_TS;
 };
 
+const isAllowedTargetContract = (targetContract: string, chainId: ChainId) => {
+  return [
+    getRainbowRouterContractAddress(chainId).toLowerCase(),
+    getAmmContractAddress(chainId).toLowerCase(),
+  ].includes(targetContract.toLowerCase());
+};
+
 /**
  * Function that fills a quote onchain via rainbow's swap aggregator smart contract
  *
@@ -442,6 +466,11 @@ export const fillQuote = async (
   chainId: ChainId,
   referrer?: string
 ): Promise<Transaction> => {
+  const targetContract = quote.to;
+  if (!targetContract || !isAllowedTargetContract(targetContract, chainId)) {
+    throw new Error('Target contract unauthorized');
+  }
+
   const instance = new Contract(
     getRainbowRouterContractAddress(chainId),
     RainbowRouterABI,
