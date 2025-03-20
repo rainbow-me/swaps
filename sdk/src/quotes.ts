@@ -84,7 +84,7 @@ export const getAmmContractAddress = (chainId: ChainId) => {
  * @param {number} params.slippage
  * @returns {string}
  */
-const buildRainbowQuoteUrl = ({
+export const buildRainbowQuoteUrl = ({
   chainId,
   sellTokenAddress,
   buyTokenAddress,
@@ -109,11 +109,11 @@ const buildRainbowQuoteUrl = ({
   currency: string;
 }) => {
   const searchParams = new URLSearchParams({
+    allowFallback: String(true),
     buyToken: buyTokenAddress,
     chainId: String(chainId),
     currency,
     enableZoraSwaps: String(true),
-    fallback: String(true),
     fromAddress,
     sellToken: sellTokenAddress,
     slippage: String(slippage),
@@ -441,7 +441,13 @@ const calculateDeadline = async (wallet: Wallet) => {
   return timestamp + PERMIT_EXPIRATION_TS;
 };
 
-const isAllowedTargetContract = (targetContract: string, chainId: ChainId) => {
+/**
+ * Helper function to check if a target contract is allowed
+ */
+export const isAllowedTargetContract = (
+  targetContract: string,
+  chainId: ChainId
+) => {
   return [
     getRainbowRouterContractAddress(chainId).toLowerCase(),
     getAmmContractAddress(chainId).toLowerCase(),
