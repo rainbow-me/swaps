@@ -494,100 +494,109 @@ export const fillQuote = async (
     feePercentageBasisPoints,
   } = quote;
 
-  const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
+  if (!quote.fallback) {
+    const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
 
-  if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
-    swapTx = await instance.populateTransaction.fillQuoteEthToToken(
-      buyTokenAddress,
-      to,
-      data,
-      fee,
-      {
-        ...transactionOptions,
-        value,
-      }
-    );
-  } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
-    if (permit) {
-      const deadline = await calculateDeadline(wallet as Wallet);
-      const permitSignature = await signPermit(
-        wallet as Wallet,
-        sellTokenAddress,
-        quote.from,
-        instance.address,
-        MAX_INT,
-        deadline,
-        chainId
-      );
-      swapTx = await instance.populateTransaction.fillQuoteTokenToEthWithPermit(
-        sellTokenAddress,
-        to,
-        data,
-        sellAmount,
-        feePercentageBasisPoints,
-        permitSignature,
-        {
-          ...transactionOptions,
-          value,
-        }
-      );
-    } else {
-      swapTx = await instance.populateTransaction.fillQuoteTokenToEth(
-        sellTokenAddress,
-        to,
-        data,
-        sellAmount,
-        feePercentageBasisPoints,
-        {
-          ...transactionOptions,
-          value,
-        }
-      );
-    }
-  } else {
-    if (permit) {
-      const deadline = await calculateDeadline(wallet as Wallet);
-      const permitSignature = await signPermit(
-        wallet as Wallet,
-        sellTokenAddress,
-        quote.from,
-        instance.address,
-        MAX_INT,
-        deadline,
-        chainId
-      );
-      swapTx =
-        await instance.populateTransaction.fillQuoteTokenToTokenWithPermit(
-          sellTokenAddress,
-          buyTokenAddress,
-          to,
-          data,
-          sellAmount,
-          fee,
-          permitSignature,
-          {
-            ...transactionOptions,
-            value,
-          }
-        );
-    } else {
-      swapTx = await instance.populateTransaction.fillQuoteTokenToToken(
-        sellTokenAddress,
+    if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
+      swapTx = await instance.populateTransaction.fillQuoteEthToToken(
         buyTokenAddress,
         to,
         data,
-        sellAmount,
         fee,
         {
           ...transactionOptions,
           value,
         }
       );
+    } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
+      if (permit) {
+        const deadline = await calculateDeadline(wallet as Wallet);
+        const permitSignature = await signPermit(
+          wallet as Wallet,
+          sellTokenAddress,
+          quote.from,
+          instance.address,
+          MAX_INT,
+          deadline,
+          chainId
+        );
+        swapTx =
+          await instance.populateTransaction.fillQuoteTokenToEthWithPermit(
+            sellTokenAddress,
+            to,
+            data,
+            sellAmount,
+            feePercentageBasisPoints,
+            permitSignature,
+            {
+              ...transactionOptions,
+              value,
+            }
+          );
+      } else {
+        swapTx = await instance.populateTransaction.fillQuoteTokenToEth(
+          sellTokenAddress,
+          to,
+          data,
+          sellAmount,
+          feePercentageBasisPoints,
+          {
+            ...transactionOptions,
+            value,
+          }
+        );
+      }
+    } else {
+      if (permit) {
+        const deadline = await calculateDeadline(wallet as Wallet);
+        const permitSignature = await signPermit(
+          wallet as Wallet,
+          sellTokenAddress,
+          quote.from,
+          instance.address,
+          MAX_INT,
+          deadline,
+          chainId
+        );
+        swapTx =
+          await instance.populateTransaction.fillQuoteTokenToTokenWithPermit(
+            sellTokenAddress,
+            buyTokenAddress,
+            to,
+            data,
+            sellAmount,
+            fee,
+            permitSignature,
+            {
+              ...transactionOptions,
+              value,
+            }
+          );
+      } else {
+        swapTx = await instance.populateTransaction.fillQuoteTokenToToken(
+          sellTokenAddress,
+          buyTokenAddress,
+          to,
+          data,
+          sellAmount,
+          fee,
+          {
+            ...transactionOptions,
+            value,
+          }
+        );
+      }
     }
-  }
 
-  if (referrer) {
-    swapTx.data = `${swapTx.data}${getReferrerCode(referrer)}`;
+    if (referrer) {
+      swapTx.data = `${swapTx.data}${getReferrerCode(referrer)}`;
+    }
+  } else {
+    swapTx = {
+      data: quote.data,
+      from: quote.from,
+      to: quote.to,
+    };
   }
 
   const newSwapTx = await wallet.sendTransaction({
