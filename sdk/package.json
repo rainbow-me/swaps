@@ -1,5 +1,5 @@
 {
-  "version": "0.32.0",
+  "version": "0.34.0",
   "name": "@rainbow-me/swaps",
   "license": "GPL-3.0",
   "main": "dist/index.js",
