@@ -1,9 +1,6 @@
 ---
 name: CI
 
-env:
-  node-version: 16.16.0
-
 on:
   push:
     branches: [main]
@@ -11,7 +8,7 @@ on:
     branches: [main]
 
 jobs:
-  integration:
+  smart-contracts:
     runs-on: ubuntu-latest
     env:
       MAINNET_RPC_ENDPOINT: ${{ secrets.MAINNET_RPC_ENDPOINT }}
@@ -21,7 +18,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ env.node-version }}
+          node-version: 16.16.0
           cache: yarn
           cache-dependency-path: smart-contracts/yarn.lock
       - name: Smart contracts setup
@@ -42,3 +39,21 @@ jobs:
           target: 'smart-contracts'
           slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp,immutable-states'
 
+  sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: sdk/yarn.lock
+      - name: Smart contracts setup
+        run: |
+          cd sdk
+          yarn install
+      - name: Run tests
+        run: |
+          cd sdk
+          yarn test

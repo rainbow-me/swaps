@@ -5,6 +5,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
 import { Wallet } from '@ethersproject/wallet';
 import RainbowRouterABI from './abi/RainbowRouter.json';
+import SwapRouter02ABI from './abi/SwapRouter02.json';
 import {
   ChainId,
   CrosschainQuote,
@@ -19,6 +20,7 @@ import {
   TransactionOptions,
 } from './types';
 import {
+  AMM_CONTRACT_ADDRESSES,
   API_BASE_URL,
   ETH_ADDRESS,
   MAX_INT,
@@ -31,13 +33,12 @@ import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
 import { sanityCheckAddress } from './utils/sanity_check';
 
-
 /**
  * Configure SDK for mocking or fallback to API_BASE_URL
  *
  */
 export let sdkConfig = {
-  apiBaseUrl: API_BASE_URL
+  apiBaseUrl: API_BASE_URL,
 };
 
 export function configureSDK(options: { apiBaseUrl?: string }) {
@@ -60,6 +61,16 @@ export const getRainbowRouterContractAddress = (chainId: ChainId) => {
 };
 
 /**
+ * Function to get the amm contract address based on the chainId
+ *
+ * @param {ChainId} chainId
+ * @returns {string}
+ */
+export const getAmmContractAddress = (chainId: ChainId) => {
+  return AMM_CONTRACT_ADDRESSES[chainId];
+};
+
+/**
  * Function to get a swap formatted quote url to use with backend
  *
  * @param {ChainId} params.chainId
@@ -73,7 +84,7 @@ export const getRainbowRouterContractAddress = (chainId: ChainId) => {
  * @param {number} params.slippage
  * @returns {string}
  */
-const buildRainbowQuoteUrl = ({
+export const buildRainbowQuoteUrl = ({
   chainId,
   sellTokenAddress,
   buyTokenAddress,
@@ -98,6 +109,7 @@ const buildRainbowQuoteUrl = ({
   currency: string;
 }) => {
   const searchParams = new URLSearchParams({
+    allowFallback: String(true),
     buyToken: buyTokenAddress,
     chainId: String(chainId),
     currency,
@@ -167,7 +179,10 @@ export const buildRainbowCrosschainQuoteUrl = ({
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
   });
-  return `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` + searchParams.toString();
+  return (
+    `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` +
+    searchParams.toString()
+  );
 };
 
 /**
@@ -208,7 +223,10 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
     source: Source.CrosschainAggregatorRelay.toString(),
     toChainId: String(toChainId),
   });
-  return `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` + searchParams.toString();
+  return (
+    `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` +
+    searchParams.toString()
+  );
 };
 
 /**
@@ -424,6 +442,19 @@ const calculateDeadline = async (wallet: Wallet) => {
 };
 
 /**
+ * Helper function to check if a target contract is allowed
+ */
+export const isAllowedTargetContract = (
+  targetContract: string,
+  chainId: ChainId
+) => {
+  return [
+    getRainbowRouterContractAddress(chainId).toLowerCase(),
+    getAmmContractAddress(chainId).toLowerCase(),
+  ].includes(targetContract.toLowerCase());
+};
+
+/**
  * Function that fills a quote onchain via rainbow's swap aggregator smart contract
  *
  * @param {Quote} quote
@@ -442,11 +473,14 @@ export const fillQuote = async (
   chainId: ChainId,
   referrer?: string
 ): Promise<Transaction> => {
-  const instance = new Contract(
-    getRainbowRouterContractAddress(chainId),
-    RainbowRouterABI,
-    wallet
-  );
+  const targetContract = quote.to;
+  if (!targetContract || !isAllowedTargetContract(targetContract, chainId)) {
+    throw new Error('Target contract unauthorized');
+  }
+
+  const ABI = quote.fallback ? SwapRouter02ABI : RainbowRouterABI;
+  const instance = new Contract(targetContract, ABI, wallet);
+
   let swapTx;
 
   const {
@@ -460,100 +494,109 @@ export const fillQuote = async (
     feePercentageBasisPoints,
   } = quote;
 
-  const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
+  if (!quote.fallback) {
+    const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
 
-  if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
-    swapTx = await instance.populateTransaction.fillQuoteEthToToken(
-      buyTokenAddress,
-      to,
-      data,
-      fee,
-      {
-        ...transactionOptions,
-        value,
-      }
-    );
-  } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
-    if (permit) {
-      const deadline = await calculateDeadline(wallet as Wallet);
-      const permitSignature = await signPermit(
-        wallet as Wallet,
-        sellTokenAddress,
-        quote.from,
-        instance.address,
-        MAX_INT,
-        deadline,
-        chainId
-      );
-      swapTx = await instance.populateTransaction.fillQuoteTokenToEthWithPermit(
-        sellTokenAddress,
-        to,
-        data,
-        sellAmount,
-        feePercentageBasisPoints,
-        permitSignature,
-        {
-          ...transactionOptions,
-          value,
-        }
-      );
-    } else {
-      swapTx = await instance.populateTransaction.fillQuoteTokenToEth(
-        sellTokenAddress,
-        to,
-        data,
-        sellAmount,
-        feePercentageBasisPoints,
-        {
-          ...transactionOptions,
-          value,
-        }
-      );
-    }
-  } else {
-    if (permit) {
-      const deadline = await calculateDeadline(wallet as Wallet);
-      const permitSignature = await signPermit(
-        wallet as Wallet,
-        sellTokenAddress,
-        quote.from,
-        instance.address,
-        MAX_INT,
-        deadline,
-        chainId
-      );
-      swapTx =
-        await instance.populateTransaction.fillQuoteTokenToTokenWithPermit(
-          sellTokenAddress,
-          buyTokenAddress,
-          to,
-          data,
-          sellAmount,
-          fee,
-          permitSignature,
-          {
-            ...transactionOptions,
-            value,
-          }
-        );
-    } else {
-      swapTx = await instance.populateTransaction.fillQuoteTokenToToken(
-        sellTokenAddress,
+    if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
+      swapTx = await instance.populateTransaction.fillQuoteEthToToken(
         buyTokenAddress,
         to,
         data,
-        sellAmount,
         fee,
         {
           ...transactionOptions,
           value,
         }
       );
+    } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
+      if (permit) {
+        const deadline = await calculateDeadline(wallet as Wallet);
+        const permitSignature = await signPermit(
+          wallet as Wallet,
+          sellTokenAddress,
+          quote.from,
+          instance.address,
+          MAX_INT,
+          deadline,
+          chainId
+        );
+        swapTx =
+          await instance.populateTransaction.fillQuoteTokenToEthWithPermit(
+            sellTokenAddress,
+            to,
+            data,
+            sellAmount,
+            feePercentageBasisPoints,
+            permitSignature,
+            {
+              ...transactionOptions,
+              value,
+            }
+          );
+      } else {
+        swapTx = await instance.populateTransaction.fillQuoteTokenToEth(
+          sellTokenAddress,
+          to,
+          data,
+          sellAmount,
+          feePercentageBasisPoints,
+          {
+            ...transactionOptions,
+            value,
+          }
+        );
+      }
+    } else {
+      if (permit) {
+        const deadline = await calculateDeadline(wallet as Wallet);
+        const permitSignature = await signPermit(
+          wallet as Wallet,
+          sellTokenAddress,
+          quote.from,
+          instance.address,
+          MAX_INT,
+          deadline,
+          chainId
+        );
+        swapTx =
+          await instance.populateTransaction.fillQuoteTokenToTokenWithPermit(
+            sellTokenAddress,
+            buyTokenAddress,
+            to,
+            data,
+            sellAmount,
+            fee,
+            permitSignature,
+            {
+              ...transactionOptions,
+              value,
+            }
+          );
+      } else {
+        swapTx = await instance.populateTransaction.fillQuoteTokenToToken(
+          sellTokenAddress,
+          buyTokenAddress,
+          to,
+          data,
+          sellAmount,
+          fee,
+          {
+            ...transactionOptions,
+            value,
+          }
+        );
+      }
     }
-  }
 
-  if (referrer) {
-    swapTx.data = `${swapTx.data}${getReferrerCode(referrer)}`;
+    if (referrer) {
+      swapTx.data = `${swapTx.data}${getReferrerCode(referrer)}`;
+    }
+  } else {
+    swapTx = {
+      data: quote.data,
+      from: quote.from,
+      to: quote.to,
+    };
   }
 
   const newSwapTx = await wallet.sendTransaction({
