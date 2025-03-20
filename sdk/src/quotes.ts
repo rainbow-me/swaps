@@ -455,6 +455,19 @@ export const isAllowedTargetContract = (
 };
 
 /**
+ * Function to get the target contract address for a quote
+ *
+ * @param {Quote} quote
+ * @returns {string}
+ */
+export const getTargetAddress = (quote: Quote) => {
+  if (quote.fallback) {
+    return quote.to;
+  }
+  return getRainbowRouterContractAddress(quote.chainId);
+};
+
+/**
  * Function that fills a quote onchain via rainbow's swap aggregator smart contract
  *
  * @param {Quote} quote
@@ -473,7 +486,7 @@ export const fillQuote = async (
   chainId: ChainId,
   referrer?: string
 ): Promise<Transaction> => {
-  const targetContract = quote.to;
+  const targetContract = getTargetAddress(quote);
   if (!targetContract || !isAllowedTargetContract(targetContract, chainId)) {
     throw new Error('Target contract unauthorized');
   }
