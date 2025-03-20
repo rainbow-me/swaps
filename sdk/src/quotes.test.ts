@@ -20,8 +20,9 @@ describe('Quotes', () => {
     it('should throw error if target contract is not allowed', async () => {
       const invalidQuote = {
         chainId: ChainId.mainnet,
-        to: '0x1234567890123456789012345678901234567890',
-      } as Quote;
+        fallback: true,
+        to: '0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC',
+      } as unknown as Quote;
 
       let error: Error | undefined;
       try {
@@ -40,6 +41,18 @@ describe('Quotes', () => {
         ChainId.mainnet
       );
       expect(result).toEqual(true);
+
+      const resultSanko = isAllowedTargetContract(
+        RAINBOW_ROUTER_CONTRACT_ADDRESS,
+        ChainId.sanko
+      );
+      expect(resultSanko).toEqual(true);
+
+      const resultGravity = isAllowedTargetContract(
+        RAINBOW_ROUTER_CONTRACT_ADDRESS,
+        ChainId.gravity
+      );
+      expect(resultGravity).toEqual(true);
     });
 
     it('should allow AMM contract address', () => {

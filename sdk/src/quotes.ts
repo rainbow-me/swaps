@@ -493,7 +493,6 @@ export const fillQuote = async (
 
   const ABI = quote.fallback ? SwapRouter02ABI : RainbowRouterABI;
   const instance = new Contract(targetContract, ABI, wallet);
-
   let swapTx;
 
   const {
