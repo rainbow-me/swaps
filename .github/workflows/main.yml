@@ -11,7 +11,7 @@ on:
     branches: [main]
 
 jobs:
-  integration:
+  smart-contracts:
     runs-on: ubuntu-latest
     env:
       MAINNET_RPC_ENDPOINT: ${{ secrets.MAINNET_RPC_ENDPOINT }}
