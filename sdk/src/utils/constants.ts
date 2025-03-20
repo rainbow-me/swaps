@@ -31,7 +31,7 @@ export const AMM_CONTRACT_ADDRESSES: Record<ChainId, string> = {
   [ChainId.ink]: '0x177778F19E89dD1012BdBe603F144088A95C4B53',
   [ChainId.berachain]: '0xe301E48F77963D3F7DbD2a4796962Bd7f3867Fb4',
   [ChainId.unichain]: '0x73855d06de49d0fe4a9c42636ba96c62da12ff9c',
-  [ChainId.zora]: '0x73855d06de49d0fe4a9c42636ba96c62da12ff9c',
+  [ChainId.zora]: '0x7De04c96BE5159c3b5CeffC82aa176dc81281557',
   [ChainId.degen]: '0x9c0dF4b950ca19Db6fEC13ab79aD180a9C15a41E',
   [ChainId.apechain]: '0xC69Dc28924930583024E067b2B3d773018F4EB52',
 };
