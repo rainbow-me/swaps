@@ -1,8 +1,4 @@
----
 name: CI
-
-env:
-  node-version: 18 
 
 on:
   push:
@@ -18,10 +14,10 @@ jobs:
       COINMARKETCAP_API_KEY: ${{ secrets.COINMARKETCAP_API_KEY }}
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
+      - name: Setup Node.js environment for Hardhat
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ env.node-version }}
+          node-version: 16  # Hardhat requires Node.js 16
           cache: yarn
           cache-dependency-path: smart-contracts/yarn.lock
       - name: Smart contracts setup
@@ -30,15 +26,14 @@ jobs:
           yarn install
           yarn compile
           yarn lint
-      - name: run smart-contracts base tests
+      - name: Run smart-contracts base tests
         run: |
-            cd smart-contracts
-            yarn test test/base/*.* || yarn test test/base/*.*
+          cd smart-contracts
+          yarn test test/base/*.* || yarn test test/base/*.*
       - name: Run Slither
         uses: crytic/slither-action@main
         id: slither
         with:
-          node-version: ${{ env.node-version }}
           target: 'smart-contracts'
           slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp,immutable-states'
 
@@ -48,13 +43,13 @@ jobs:
       RPC_URL: ${{ secrets.RPC_URL }}
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
+      - name: Setup Node.js environment for SDK
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ env.node-version }}
+          node-version: 18  # SDK dependencies need Node.js 18+
           cache: yarn
           cache-dependency-path: sdk/yarn.lock
-      - name: Smart contracts setup
+      - name: SDK setup
         run: |
           cd sdk
           yarn install
