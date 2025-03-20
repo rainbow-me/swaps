@@ -4,7 +4,7 @@ import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
 import { default as WethAbi } from './abi/Weth.json';
-import {EthereumAddress, Quote, SwapType, TransactionOptions} from './types';
+import { EthereumAddress, Quote, SwapType, TransactionOptions } from './types';
 
 /**
  * Function to wrap a specific amount of the native asset

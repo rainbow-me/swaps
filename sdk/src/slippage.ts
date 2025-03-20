@@ -1,4 +1,5 @@
 import { BigNumberish } from '@ethersproject/bignumber';
+import { sdkConfig } from './quotes';
 import {
   ChainId,
   EthereumAddress,
@@ -6,7 +7,6 @@ import {
   SlippageError,
   SlippageParams,
 } from './types';
-import { sdkConfig } from './quotes'; 
 
 /**
  * Function to get a slippage formatted quote url to use with backend
