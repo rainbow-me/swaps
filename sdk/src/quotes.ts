@@ -66,7 +66,7 @@ export const getRainbowRouterContractAddress = (chainId: ChainId) => {
  * @param {ChainId} chainId
  * @returns {string}
  */
-export const getAmmContractAddress = (chainId: ChainId) => {
+export const getAmmContractAddress = (chainId: ChainId): string | undefined => {
   return AMM_CONTRACT_ADDRESSES[chainId];
 };
 
@@ -448,9 +448,12 @@ export const isAllowedTargetContract = (
   targetContract: string,
   chainId: ChainId
 ) => {
+  const rainbowRouterContractAddress =
+    getRainbowRouterContractAddress(chainId) ?? '';
+  const ammContractAddress = getAmmContractAddress(chainId) ?? '';
   return [
-    getRainbowRouterContractAddress(chainId).toLowerCase(),
-    getAmmContractAddress(chainId).toLowerCase(),
+    rainbowRouterContractAddress.toLowerCase(),
+    ammContractAddress.toLowerCase(),
   ].includes(targetContract.toLowerCase());
 };
 

@@ -35,7 +35,7 @@ jobs:
         uses: crytic/slither-action@main
         id: slither
         with:
-          node-version: ${{ env.node-version }}
+          node-version: '16.16.0'
           target: 'smart-contracts'
           slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp,immutable-states'
 
