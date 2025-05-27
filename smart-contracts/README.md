@@ -15,6 +15,13 @@ Run tests with: `MAINNET_RPC_ENDPOINT=https://eth-mainnet.g.alchemy.com/v2/{ALCH
 - AVAX Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://snowtrace.io/address/0x00000000009726632680fb29d3f7a9734e3010e2)
 - Blast Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://blastscan.io/address/0x00000000009726632680fb29d3f7a9734e3010e2)
 - Zora Mainnet: [0xA61550E9ddD2797E16489db09343162BE98d9483](https://explorer.zora.energy/address/0xA61550E9ddD2797E16489db09343162BE98d9483)
+- Degen Chain Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://explorer.degen.tips/address/0x00000000009726632680FB29d3F7A9734E3010E2)
+- Ink Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://explorer.inkonchain.com/address/0x00000000009726632680FB29d3F7A9734E3010E2)
+- Berachain Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://berascan.com/address/0x00000000009726632680fb29d3f7a9734e3010e2)
+- Apechain Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://apescan.io/address/0x00000000009726632680fb29d3f7a9734e3010e2)
+- Sanko Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://explorer.sanko.xyz/address/0x00000000009726632680FB29d3F7A9734E3010E2)
+- Gravity Mainnet: [0x00000000009726632680fb29d3f7a9734e3010e2](https://explorer.gravity.xyz/address/0x00000000009726632680FB29d3F7A9734E3010E2)
+- Unichain Mainnet: [0x2a0332e28913a06fa924d40a3e2160f763010417](https://unichain.blockscout.com/address/0x2a0332E28913A06Fa924d40A3E2160f763010417)
 
 
 ## Audits
