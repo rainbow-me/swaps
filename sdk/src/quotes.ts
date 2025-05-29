@@ -799,7 +799,6 @@ export const prepareFillQuote = async (
  * Function that prepares a crosschain swap quote transaction data for batching without executing it
  *
  * @param {CrosschainQuote} quote
- * @param {TransactionOptions} transactionOptions
  * @param {string} referrer
  * @returns {Promise<BatchCall>}
  */
