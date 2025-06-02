@@ -489,6 +489,180 @@ export const fillQuote = async (
   chainId: ChainId,
   referrer?: string
 ): Promise<Transaction> => {
+  // Use the prepare function to get transaction data
+  const preparedTx = await prepareFillQuote(
+    quote,
+    transactionOptions,
+    wallet,
+    permit,
+    chainId,
+    referrer
+  );
+
+  // Send the transaction
+  const newSwapTx = await wallet.sendTransaction({
+    data: preparedTx.data,
+    to: preparedTx.to,
+    value: preparedTx.value,
+    ...transactionOptions,
+  });
+
+  return newSwapTx;
+};
+
+/**
+ * Function that fills a crosschain swap quote onchain via rainbow's swap aggregator smart contract
+ *
+ * @param {CrosschainQuote} quote
+ * @param {TransactionOptions} transactionOptions
+ * @param {Signer} wallet
+ * @param {string} referrer
+ * @returns {Promise<Transaction>}
+ */
+export const fillCrosschainQuote = async (
+  quote: CrosschainQuote,
+  transactionOptions: TransactionOptions,
+  wallet: Signer,
+  referrer?: string
+): Promise<Transaction> => {
+  // Use the prepare function to get transaction data
+  const preparedTx = await prepareFillCrosschainQuote(quote, referrer);
+
+  // Send the transaction
+  const swapTx = await wallet.sendTransaction({
+    data: preparedTx.data,
+    to: preparedTx.to,
+    value: preparedTx.value,
+    ...transactionOptions,
+  });
+
+  return swapTx;
+};
+
+export const getQuoteExecutionDetails = (
+  quote: Quote,
+  transactionOptions: TransactionOptions,
+  provider: StaticJsonRpcProvider
+): QuoteExecutionDetails => {
+  const instance = new Contract(
+    getRainbowRouterContractAddress(quote.chainId),
+    RainbowRouterABI,
+    provider
+  );
+
+  const {
+    sellTokenAddress,
+    buyTokenAddress,
+    to,
+    data,
+    fee,
+    value,
+    sellAmount,
+    feePercentageBasisPoints,
+  } = quote;
+
+  const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
+
+  if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
+    return {
+      method: instance.estimateGas['fillQuoteEthToToken'],
+      methodArgs: [buyTokenAddress, to, data, fee],
+      methodName: 'fillQuoteEthToToken',
+      params: {
+        ...transactionOptions,
+        value,
+      },
+      router: instance,
+    };
+  } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
+    return {
+      method: instance.estimateGas['fillQuoteTokenToEth'],
+      methodArgs: [
+        sellTokenAddress,
+        to,
+        data,
+        sellAmount,
+        feePercentageBasisPoints,
+      ],
+      methodName: 'fillQuoteTokenToEth',
+      params: {
+        ...transactionOptions,
+        value,
+      },
+      router: instance,
+    };
+  } else {
+    return {
+      method: instance.estimateGas['fillQuoteTokenToToken'],
+      methodArgs: [
+        sellTokenAddress,
+        buyTokenAddress,
+        to,
+        data,
+        sellAmount,
+        fee,
+      ],
+      methodName: 'fillQuoteTokenToToken',
+      params: {
+        ...transactionOptions,
+        value,
+      },
+      router: instance,
+    };
+  }
+};
+
+export const getCrosschainQuoteExecutionDetails = (
+  quote: CrosschainQuote,
+  transactionOptions: TransactionOptions,
+  provider: StaticJsonRpcProvider
+): CrosschainQuoteExecutionDetails => {
+  const { from, data, value } = quote;
+
+  sanityCheckAddress(quote?.to);
+
+  return {
+    method: provider.estimateGas({
+      data,
+      from,
+      to: quote.to,
+      value,
+    }),
+    params: {
+      ...transactionOptions,
+      value,
+    },
+  };
+};
+
+/**
+ * Interface for batch call data compatible with EIP-7702 batching
+ */
+export interface BatchCall {
+  to: string;
+  value: string;
+  data: string;
+}
+
+/**
+ * Function that prepares a quote transaction data for batching without executing it
+ *
+ * @param {Quote} quote
+ * @param {TransactionOptions} transactionOptions
+ * @param {Signer} wallet
+ * @param {boolean} permit
+ * @param {number} chainId
+ * @param {string} referrer
+ * @returns {Promise<BatchCall>}
+ */
+export const prepareFillQuote = async (
+  quote: Quote,
+  transactionOptions: TransactionOptions,
+  wallet: Signer,
+  permit: boolean,
+  chainId: ChainId,
+  referrer?: string
+): Promise<BatchCall> => {
   const targetContract = getTargetAddress(quote);
   if (!targetContract || !isAllowedTargetContract(targetContract, chainId)) {
     throw new Error('Target contract unauthorized');
@@ -614,148 +788,44 @@ export const fillQuote = async (
     };
   }
 
-  const newSwapTx = await wallet.sendTransaction({
-    data: swapTx.data,
-    from: swapTx.from,
-    to: swapTx.to,
-    ...{
-      ...transactionOptions,
-      value,
-    },
-  });
-
-  return newSwapTx;
+  return {
+    data: swapTx.data || '',
+    to: swapTx.to || '',
+    value: (swapTx.value || value || '0').toString(),
+  };
 };
 
 /**
- * Function that fills a crosschain swap quote onchain via rainbow's swap aggregator smart contract
+ * Function that prepares a crosschain swap quote transaction data for batching without executing it
  *
  * @param {CrosschainQuote} quote
- * @param {TransactionOptions} transactionOptions
- * @param {Signer} wallet
  * @param {string} referrer
- * @returns {Promise<Transaction>}
+ * @returns {Promise<BatchCall>}
  */
-export const fillCrosschainQuote = async (
+export const prepareFillCrosschainQuote = async (
   quote: CrosschainQuote,
-  transactionOptions: TransactionOptions,
-  wallet: Signer,
   referrer?: string
-): Promise<Transaction> => {
-  const { data, from, value } = quote;
+): Promise<BatchCall> => {
+  const { data, value } = quote;
 
   sanityCheckAddress(quote?.to);
+
+  if (!quote.to) {
+    throw new Error('Quote must have a valid target address');
+  }
+
+  if (!data) {
+    throw new Error('Quote must have valid transaction data');
+  }
 
   let txData = data;
   if (referrer) {
     txData = `${txData}${getReferrerCode(referrer)}`;
   }
 
-  const swapTx = await wallet.sendTransaction({
-    data: txData,
-    from,
-    to: quote.to,
-    ...{
-      ...transactionOptions,
-      value,
-    },
-  });
-
-  return swapTx;
-};
-
-export const getQuoteExecutionDetails = (
-  quote: Quote,
-  transactionOptions: TransactionOptions,
-  provider: StaticJsonRpcProvider
-): QuoteExecutionDetails => {
-  const instance = new Contract(
-    getRainbowRouterContractAddress(quote.chainId),
-    RainbowRouterABI,
-    provider
-  );
-
-  const {
-    sellTokenAddress,
-    buyTokenAddress,
-    to,
-    data,
-    fee,
-    value,
-    sellAmount,
-    feePercentageBasisPoints,
-  } = quote;
-
-  const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
-
-  if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
-    return {
-      method: instance.estimateGas['fillQuoteEthToToken'],
-      methodArgs: [buyTokenAddress, to, data, fee],
-      methodName: 'fillQuoteEthToToken',
-      params: {
-        ...transactionOptions,
-        value,
-      },
-      router: instance,
-    };
-  } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
-    return {
-      method: instance.estimateGas['fillQuoteTokenToEth'],
-      methodArgs: [
-        sellTokenAddress,
-        to,
-        data,
-        sellAmount,
-        feePercentageBasisPoints,
-      ],
-      methodName: 'fillQuoteTokenToEth',
-      params: {
-        ...transactionOptions,
-        value,
-      },
-      router: instance,
-    };
-  } else {
-    return {
-      method: instance.estimateGas['fillQuoteTokenToToken'],
-      methodArgs: [
-        sellTokenAddress,
-        buyTokenAddress,
-        to,
-        data,
-        sellAmount,
-        fee,
-      ],
-      methodName: 'fillQuoteTokenToToken',
-      params: {
-        ...transactionOptions,
-        value,
-      },
-      router: instance,
-    };
-  }
-};
-
-export const getCrosschainQuoteExecutionDetails = (
-  quote: CrosschainQuote,
-  transactionOptions: TransactionOptions,
-  provider: StaticJsonRpcProvider
-): CrosschainQuoteExecutionDetails => {
-  const { from, data, value } = quote;
-
-  sanityCheckAddress(quote?.to);
-
   return {
-    method: provider.estimateGas({
-      data,
-      from,
-      to: quote.to,
-      value,
-    }),
-    params: {
-      ...transactionOptions,
-      value,
-    },
+    data: txData,
+    to: quote.to,
+    value: (value || '0').toString(),
   };
 };
