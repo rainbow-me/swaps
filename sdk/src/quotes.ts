@@ -789,8 +789,8 @@ export const prepareFillQuote = async (
   }
 
   return {
-    data: swapTx.data!,
-    to: swapTx.to!,
+    data: swapTx.data || '',
+    to: swapTx.to || '',
     value: (swapTx.value || value || '0').toString(),
   };
 };
