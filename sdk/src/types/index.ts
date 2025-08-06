@@ -22,6 +22,7 @@ export enum ChainId {
   unichain = 130,
   ink = 57073,
   berachain = 80094,
+  hyperliquid = 1337
 }
 
 export enum Source {
