@@ -26,7 +26,10 @@ import {
   MAX_INT,
   PERMIT_EXPIRATION_TS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
+  RAINBOW_ROUTER_CONTRACT_ADDRESS_ABSTRACT,
+  RAINBOW_ROUTER_CONTRACT_ADDRESS_GNOSIS,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN,
+  RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
@@ -56,6 +59,12 @@ export const getRainbowRouterContractAddress = (chainId: ChainId) => {
     return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
   } else if (chainId === ChainId.unichain) {
     return RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN;
+  } else if (chainId === ChainId.zksyncera) {
+    return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC;
+  } else if (chainId === ChainId.abstract) {
+    return RAINBOW_ROUTER_CONTRACT_ADDRESS_ABSTRACT;
+  } else if (chainId === ChainId.gnosis) {
+    return RAINBOW_ROUTER_CONTRACT_ADDRESS_GNOSIS;
   }
   return RAINBOW_ROUTER_CONTRACT_ADDRESS;
 };
