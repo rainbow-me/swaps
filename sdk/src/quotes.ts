@@ -122,7 +122,7 @@ export const buildRainbowQuoteUrl = ({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
     currency,
-    enableZoraSwaps: String(true),
+    enableNewChainSwaps: String(true),
     fromAddress,
     sellToken: sellTokenAddress,
     slippage: String(slippage),
