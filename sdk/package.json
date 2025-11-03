@@ -20,7 +20,9 @@
     "prepack": "tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why",
-    "tag-version": "git tag -a v$(node -p \"require('./package.json').version\") -m \"Release v$(node -p \"require('./package.json').version\")\" && git push --tags"
+    "changeset": "changeset",
+    "release": "yarn release:verify-git && yarn build && changeset publish --tag latest && git push --follow-tags",
+    "release:verify-git": "git diff --exit-code && git rev-parse --abbrev-ref HEAD | grep \"main\""
   },
   "husky": {
     "hooks": {
@@ -46,6 +48,7 @@
     }
   ],
   "devDependencies": {
+    "@changesets/cli": "^2.27.1",
     "@size-limit/preset-small-lib": "^5.0.3",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "eslint": "^7.32.0",
