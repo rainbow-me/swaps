@@ -63,3 +63,7 @@ MAINNET_RPC_ENDPOINT=https://eth-mainnet.g.alchemy.com/v2/{ALCHEMY_MAINNET_KEY} 
 
 ## Audits
 - [OpenZeppelin (2022/01/10 - 2022/02/25)](audits/2022-02-25-OpenZeppelin-Rainbow-Swap-Aggregator.pdf)
+
+## License
+
+Licensed under the [GPL-3.0 License](LICENSE).
