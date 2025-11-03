@@ -11,17 +11,17 @@
   "engines": {
     "node": ">=10"
   },
+  "packageManager": "yarn@4.2.2",
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build --ignore-pattern tests/*",
     "test": "tsdx test --passWithNoTests",
     "lint": "eslint . --ext js,ts,jsx,tsx",
-    "prepare": "tsdx build",
+    "prepack": "tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why",
     "tag-version": "git tag -a v$(node -p \"require('./package.json').version\") -m \"Release v$(node -p \"require('./package.json').version\")\" && git push --tags"
   },
-  "peerDependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "tsdx lint"
@@ -74,16 +74,16 @@
     "@metamask/eth-sig-util": "7.0.0"
   },
   "resolutions": {
-    "**/node-notifier": "8.0.1",
-    "**/minimist": "1.2.6",
-    "**/terser": "4.8.1",
-    "**/jsdom": "16.5.0",
-    "**/nanoid": "3.1.31",
-    "**/shelljs": "0.8.5",
-    "**/json-schema": "0.4.0",
-    "**/glob-parent": "5.1.2",
-    "**/ws": "7.4.6",
-    "**/ansi-regex": "5.0.1"
+    "node-notifier": "8.0.1",
+    "minimist": "1.2.6",
+    "terser": "4.8.1",
+    "jsdom": "16.5.0",
+    "nanoid": "3.1.31",
+    "shelljs": "0.8.5",
+    "json-schema": "0.4.0",
+    "glob-parent": "5.1.2",
+    "ws": "7.4.6",
+    "ansi-regex": "5.0.1"
   },
   "jest": {
     "testEnvironment": "node"
