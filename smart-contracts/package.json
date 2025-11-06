@@ -6,7 +6,7 @@
     "@uniswap/v3-periphery": "^1.4.0",
     "eth-sig-util": "^3.0.1",
     "ethereumjs-util": "^6.2.0",
-    "hardhat": "^2.9.1",
+    "hardhat": "^2.22.0",
     "hardhat-tracer": "^1.0.0-alpha.6",
     "node-fetch": "^2.6.7"
   },
