@@ -39,6 +39,7 @@ jobs:
         with:
           node-version: '18.20.5'
           target: 'smart-contracts'
+          ignore-compile: true
           slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp,immutable-states'
 
   sdk:
