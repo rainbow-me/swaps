@@ -1,20 +1,15 @@
 import { BigNumberish } from '@ethersproject/bignumber';
+import type { Address } from 'ox/Address';
 import { sdkConfig } from './quotes';
-import {
-  ChainId,
-  EthereumAddress,
-  Slippage,
-  SlippageError,
-  SlippageParams,
-} from './types';
+import { ChainId, Slippage, SlippageError, SlippageParams } from './types';
 
 /**
  * Function to get a slippage formatted quote url to use with backend
  *
  * @param {ChainId} params.chainId
  * @param {ChainId} params.toChainId
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.buyAmount
  * @param {BigNumberish} params.sellAmount
  * @returns {string}
@@ -29,8 +24,8 @@ const buildRainbowSlippageUrl = ({
 }: {
   chainId: number;
   toChainId?: number;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   buyAmount?: BigNumberish;
   sellAmount?: BigNumberish;
 }) => {
@@ -52,8 +47,8 @@ const buildRainbowSlippageUrl = ({
  * @param {SlippageParams} params
  * @param {ChainId} params.chainId
  * @param {ChainId} params.toChainId
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.sellAmount
  * @param {BigNumberish} params.buyAmount
  * @returns {Promise<Slippage | SlippageError | null>}

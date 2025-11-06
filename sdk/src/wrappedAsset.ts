@@ -3,21 +3,22 @@ import { BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
+import type { Address } from 'ox/Address';
 import { default as WethAbi } from './abi/Weth.json';
-import { EthereumAddress, Quote, SwapType, TransactionOptions } from './types';
+import { Quote, SwapType, TransactionOptions } from './types';
 
 /**
  * Function to wrap a specific amount of the native asset
  * for the specified wallet from its ERC20 version
  * @param {BigNumberish} amount
  * @param {Signer} wallet
- * @param {EthereumAddress} wrappedAssetAddress
+ * @param {Address} wrappedAssetAddress
  * @returns {Promise<Transaction>}
  */
 export const wrapNativeAsset = async (
   amount: BigNumberish,
   wallet: Signer,
-  wrappedAssetAddress: EthereumAddress,
+  wrappedAssetAddress: Address,
   transactionOptions: TransactionOptions = {}
 ): Promise<Transaction> => {
   const instance = new Contract(
@@ -37,13 +38,13 @@ export const wrapNativeAsset = async (
  * for the specified wallet from its ERC20 version
  * @param {BigNumberish} amount
  * @param {Signer} wallet
- * @param {EthereumAddress} wrappedAssetAddress
+ * @param {Address} wrappedAssetAddress
  * @returns {Promise<Transaction>}
  */
 export const unwrapNativeAsset = async (
   amount: BigNumberish,
   wallet: Signer,
-  wrappedAssetAddress: EthereumAddress,
+  wrappedAssetAddress: Address,
   transactionOptions: TransactionOptions = {}
 ): Promise<Transaction> => {
   const instance = new Contract(
@@ -60,13 +61,13 @@ export const unwrapNativeAsset = async (
  * function that wraps or unwraps, to be used by estimateGas calls
  * @param {string} name
  * @param {StaticJsonRpcProvider} provider
- * @param {EthereumAddress} wrappedAssetAddress
+ * @param {Address} wrappedAssetAddress
  * @returns {Promise<Transaction>}
  */
 export const getWrappedAssetMethod = (
   name: string,
   provider: StaticJsonRpcProvider,
-  wrappedAssetAddress: EthereumAddress
+  wrappedAssetAddress: Address
 ): any => {
   const instance = new Contract(
     wrappedAssetAddress,
@@ -79,14 +80,14 @@ export const getWrappedAssetMethod = (
 /**
  * Get the wrapped asset address from a quote on a wrap/unwrap
  * @param quote
- * @returns {EthereumAddress}
+ * @returns {Address}
  */
-export const getWrappedAssetAddress = (quote: Quote): EthereumAddress => {
+export const getWrappedAssetAddress = (quote: Quote): Address => {
   switch (quote.swapType) {
     case SwapType.wrap:
-      return quote.buyTokenAddress as EthereumAddress;
+      return quote.buyTokenAddress;
     case SwapType.unwrap:
-      return quote.sellTokenAddress as EthereumAddress;
+      return quote.sellTokenAddress;
     default:
       throw new Error(
         `Getting wrapped asset address on a ${quote.swapType} swap is not supported`

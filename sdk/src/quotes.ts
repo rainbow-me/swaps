@@ -4,13 +4,13 @@ import { Contract } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
 import { Wallet } from '@ethersproject/wallet';
+import type { Address } from 'ox/Address';
 import RainbowRouterABI from './abi/RainbowRouter.json';
 import SwapRouter02ABI from './abi/SwapRouter02.json';
 import {
   ChainId,
   CrosschainQuote,
   CrosschainQuoteExecutionDetails,
-  EthereumAddress,
   Quote,
   QuoteError,
   QuoteExecutionDetails,
@@ -83,11 +83,11 @@ export const getAmmContractAddress = (chainId: ChainId): string | undefined => {
  * Function to get a swap formatted quote url to use with backend
  *
  * @param {ChainId} params.chainId
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.buyAmount
  * @param {BigNumberish} params.sellAmount
- * @param {EthereumAddress} params.fromAddress
+ * @param {Address} params.fromAddress
  * @param {string} params.source
  * @param {number} params.feePercentageBasisPoints
  * @param {number} params.slippage
@@ -109,11 +109,11 @@ export const buildRainbowQuoteUrl = ({
   chainId: number;
   destReceiver?: string;
   toChainId?: number;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   buyAmount?: BigNumberish;
   sellAmount?: BigNumberish;
-  fromAddress: EthereumAddress;
+  fromAddress: Address;
   feePercentageBasisPoints?: number;
   source?: Source;
   slippage: number;
@@ -145,10 +145,10 @@ export const buildRainbowQuoteUrl = ({
  *
  * @param {ChainId} params.chainId
  * @param {ChainId} params.toChainId
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.sellAmount
- * @param {EthereumAddress} params.fromAddress
+ * @param {Address} params.fromAddress
  * @param {number} params.slippage
  * @param {boolean} params.refuel
  * @param {number?} params.feePercentageBasisPoints
@@ -169,11 +169,11 @@ export const buildRainbowCrosschainQuoteUrl = ({
 }: {
   chainId: number;
   toChainId?: number;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   sellAmount?: BigNumberish;
-  fromAddress: EthereumAddress;
-  destReceiver?: EthereumAddress;
+  fromAddress: Address;
+  destReceiver?: Address;
   slippage: number;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
@@ -217,11 +217,11 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
 }: {
   chainId: number;
   toChainId?: number;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   sellAmount?: BigNumberish;
-  fromAddress: EthereumAddress;
-  destReceiver?: EthereumAddress;
+  fromAddress: Address;
+  destReceiver?: Address;
   slippage: number;
   refuel?: boolean;
   currency: string;
@@ -284,9 +284,9 @@ export const getMinRefuelAmount = async (params: {
  * @param {QuoteParams} params
  * @param {Source} params.source
  * @param {ChainId} params.chainId
- * @param {EthereumAddress} params.fromAddress
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.fromAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.sellAmount
  * @param {BigNumberish} params.buyAmount
  * @param {number} params.slippage
@@ -343,9 +343,9 @@ export const getQuote = async (
  * @param {QuoteParams} params
  * @param {ChainId} params.chainId
  * @param {ChainId} params.toChainId
- * @param {EthereumAddress} params.fromAddress
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.fromAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.sellAmount
  * @param {number} params.slippage
  * @param {boolean} params.refuel

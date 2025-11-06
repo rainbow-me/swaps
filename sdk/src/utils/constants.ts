@@ -1,5 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { ChainId, EthereumAddress } from '../types';
+import type { Address } from 'ox/Address';
+import { ChainId } from '../types';
 export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 export const API_BASE_URL = 'https://swap.p.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
@@ -18,7 +19,7 @@ export const RAINBOW_ROUTER_CONTRACT_ADDRESS_GNOSIS =
   '0x9188e9b4dabaa1ff4e75092404c223bf69cab9b7';
 
 export type MultiChainAsset = {
-  [key: string]: EthereumAddress;
+  [key: string]: Address;
 };
 
 export const AMM_CONTRACT_ADDRESSES: Record<ChainId, string> = {
