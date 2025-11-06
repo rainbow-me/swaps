@@ -9,7 +9,7 @@ describe('when creating crosschain swap URL', () => {
       buildRainbowCrosschainQuoteUrl({
         buyTokenAddress: '0x456',
         chainId: 1,
-        currency: 'usd',
+        currency: 'USD',
         feePercentageBasisPoints: 0,
         fromAddress: '0x789',
         refuel: false,
@@ -27,7 +27,7 @@ describe('when creating crosschain swap URL', () => {
       buildRainbowCrosschainQuoteUrl({
         buyTokenAddress: '0x456',
         chainId: 1,
-        currency: 'usd',
+        currency: 'USD',
         // feePercentageBasisPoints not passed
         fromAddress: '0x789',
         refuel: false,
@@ -48,7 +48,7 @@ describe('when creating claim bridge swap URL', () => {
       buildRainbowClaimBridgeQuoteUrl({
         buyTokenAddress: '0x456',
         chainId: 1,
-        currency: 'usd',
+        currency: 'USD',
         fromAddress: '0x789',
         refuel: false,
         sellAmount: '100',

@@ -11,6 +11,7 @@ import {
   ChainId,
   CrosschainQuote,
   CrosschainQuoteExecutionDetails,
+  Currency,
   Quote,
   QuoteError,
   QuoteExecutionDetails,
@@ -117,7 +118,7 @@ export const buildRainbowQuoteUrl = ({
   feePercentageBasisPoints?: number;
   source?: Source;
   slippage: number;
-  currency: string;
+  currency: Currency;
 }) => {
   const searchParams = new URLSearchParams({
     allowFallback: String(true),
@@ -177,7 +178,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
   slippage: number;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
-  currency: string;
+  currency: Currency;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
@@ -224,7 +225,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
   destReceiver?: Address;
   slippage: number;
   refuel?: boolean;
-  currency: string;
+  currency: Currency;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,

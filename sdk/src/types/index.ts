@@ -63,6 +63,22 @@ export enum SwapType {
   unwrap = 'unwrap',
 }
 
+export type Currency =
+  | 'ETH'
+  | 'USD'
+  | 'EUR'
+  | 'GBP'
+  | 'AUD'
+  | 'CNY'
+  | 'KRW'
+  | 'RUB'
+  | 'INR'
+  | 'JPY'
+  | 'TRY'
+  | 'CAD'
+  | 'NZD'
+  | 'ZAR';
+
 // QuoteParams are the parameters required to get a quote from the Swap API
 export interface QuoteParams {
   source?: Source;
@@ -77,7 +93,7 @@ export interface QuoteParams {
   refuel?: boolean;
   feePercentageBasisPoints?: number;
   toChainId?: number;
-  currency: string;
+  currency: Currency;
 }
 
 export interface ProtocolShare {
