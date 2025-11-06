@@ -37,8 +37,8 @@ jobs:
         uses: crytic/slither-action@main
         id: slither
         with:
-          node-version: '18.20.5'
           target: 'smart-contracts'
+          use-docker: false
           ignore-compile: true
           slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp,immutable-states'
 
