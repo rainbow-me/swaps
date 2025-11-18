@@ -57,7 +57,7 @@ const getDomainSeparator = async (
 };
 
 const getPermitVersion = async (
-  token: { version: () => any; DOMAIN_SEPARATOR: () => any; address: string },
+  token: { version: () => any; DOMAIN_SEPARATOR: () => any; address: Address },
   name: string,
   chainId: ChainId,
   verifyingContract: Address
@@ -151,7 +151,7 @@ export async function signPermit(
   const name = await token.name();
   const [nonce, version] = await Promise.all([
     getNonces(token, owner),
-    getPermitVersion(token as any, name, chainId, token.address),
+    getPermitVersion(token as any, name, chainId, token.address as Address),
   ]);
 
   const message: MessageParam = {
@@ -172,7 +172,7 @@ export async function signPermit(
   const domain: DomainParam = {
     chainId,
     name,
-    verifyingContract: token.address,
+    verifyingContract: token.address as Address,
   };
   if (version !== null) {
     domain.version = version;

@@ -153,7 +153,7 @@ export interface TokenAsset {
   name: string;
   network: string;
   symbol: string;
-  networks: Partial<Record<ChainId, { address: string; decimals: number }>>;
+  networks: Partial<Record<ChainId, { address: Address; decimals: number }>>;
   chainId: ChainId;
   price: TokenPrice;
   totalPrice: TokenPrice;
@@ -173,7 +173,7 @@ export interface Reward {
     name: string;
     network: string;
     symbol: string;
-    networks: Record<ChainId, { address: string; decimals: number }>;
+    networks: Record<ChainId, { address: Address; decimals: number }>;
   };
 }
 

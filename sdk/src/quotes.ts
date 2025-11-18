@@ -74,9 +74,9 @@ export const getRainbowRouterContractAddress = (chainId: ChainId) => {
  * Function to get the amm contract address based on the chainId
  *
  * @param {ChainId} chainId
- * @returns {string}
+ * @returns {Address | undefined}
  */
-export const getAmmContractAddress = (chainId: ChainId): string | undefined => {
+export const getAmmContractAddress = (chainId: ChainId): Address | undefined => {
   return AMM_CONTRACT_ADDRESSES[chainId];
 };
 
@@ -729,7 +729,7 @@ export const prepareFillQuote = async (
           wallet as Wallet,
           sellTokenAddress,
           quote.from,
-          instance.address,
+          instance.address as Address,
           MAX_INT,
           deadline,
           chainId
@@ -767,7 +767,7 @@ export const prepareFillQuote = async (
           wallet as Wallet,
           sellTokenAddress,
           quote.from,
-          instance.address,
+          instance.address as Address,
           MAX_INT,
           deadline,
           chainId
