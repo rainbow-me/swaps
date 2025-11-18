@@ -16,6 +16,7 @@
     "start": "tsdx watch",
     "build": "tsdx build --ignore-pattern tests/*",
     "test": "tsdx test --passWithNoTests",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext js,ts,jsx,tsx",
     "prepack": "tsdx build",
     "size": "size-limit",
