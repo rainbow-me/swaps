@@ -95,6 +95,7 @@ export const getAmmContractAddress = (chainId: ChainId): string | undefined => {
  */
 export const buildRainbowQuoteUrl = ({
   chainId,
+  destReceiver,
   sellTokenAddress,
   buyTokenAddress,
   buyAmount,
@@ -106,6 +107,7 @@ export const buildRainbowQuoteUrl = ({
   currency,
 }: {
   chainId: number;
+  destReceiver?: string;
   toChainId?: number;
   sellTokenAddress: EthereumAddress;
   buyTokenAddress: EthereumAddress;
@@ -133,6 +135,7 @@ export const buildRainbowQuoteUrl = ({
     ...(feePercentageBasisPoints !== undefined
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
+    ...(destReceiver ? { destReceiver } : {}),
   });
   return `${sdkConfig.apiBaseUrl}/v1/quote?` + searchParams.toString();
 };
@@ -158,6 +161,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
   buyTokenAddress,
   sellAmount,
   fromAddress,
+  destReceiver,
   slippage,
   refuel,
   feePercentageBasisPoints,
@@ -169,6 +173,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
   buyTokenAddress: EthereumAddress;
   sellAmount?: BigNumberish;
   fromAddress: EthereumAddress;
+  destReceiver?: EthereumAddress;
   slippage: number;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
@@ -187,6 +192,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
     ...(feePercentageBasisPoints !== undefined
       ? { feePercentageBasisPoints: String(feePercentageBasisPoints) }
       : {}),
+    ...(destReceiver ? { destReceiver } : {}),
   });
   return (
     `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` +
@@ -204,6 +210,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
   buyTokenAddress,
   sellAmount,
   fromAddress,
+  destReceiver,
   slippage,
   refuel,
   currency,
@@ -214,6 +221,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
   buyTokenAddress: EthereumAddress;
   sellAmount?: BigNumberish;
   fromAddress: EthereumAddress;
+  destReceiver?: EthereumAddress;
   slippage: number;
   refuel?: boolean;
   currency: string;
@@ -231,6 +239,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
     slippage: String(slippage),
     source: Source.CrosschainAggregatorRelay.toString(),
     toChainId: String(toChainId),
+    ...(destReceiver ? { destReceiver } : {}),
   });
   return (
     `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` +
@@ -291,6 +300,7 @@ export const getQuote = async (
   const {
     source,
     chainId = ChainId.mainnet,
+    destReceiver,
     fromAddress,
     sellTokenAddress,
     buyTokenAddress,
@@ -310,6 +320,7 @@ export const getQuote = async (
     buyTokenAddress,
     chainId,
     currency,
+    destReceiver,
     feePercentageBasisPoints,
     fromAddress,
     sellAmount,
@@ -350,6 +361,7 @@ export const getCrosschainQuote = async (
     chainId = ChainId.mainnet,
     toChainId,
     currency,
+    destReceiver,
     fromAddress,
     sellTokenAddress,
     buyTokenAddress,
@@ -367,6 +379,7 @@ export const getCrosschainQuote = async (
     buyTokenAddress,
     chainId,
     currency,
+    destReceiver,
     feePercentageBasisPoints,
     fromAddress,
     refuel,
@@ -391,6 +404,7 @@ export const getClaimBridgeQuote = async (
     toChainId,
     currency,
     fromAddress,
+    destReceiver,
     sellTokenAddress,
     buyTokenAddress,
     sellAmount,
@@ -406,6 +420,7 @@ export const getClaimBridgeQuote = async (
     buyTokenAddress,
     chainId,
     currency,
+    destReceiver,
     fromAddress,
     refuel,
     sellAmount,
