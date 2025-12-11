@@ -84,7 +84,7 @@ describe('Quotes', () => {
       });
 
       expect(url).toContain('allowFallback=true');
-      expect(url).toContain('enableZoraSwaps=true');
+      expect(url).toContain('enableNewChainSwaps=true');
     });
   });
 });
