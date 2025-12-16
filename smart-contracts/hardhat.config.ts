@@ -1,4 +1,4 @@
-import { HardhatUserConfig, task } from 'hardhat/config';
+import { HardhatUserConfig, task, vars } from 'hardhat/config';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-gas-reporter';
 import 'hardhat-tracer';
@@ -15,16 +15,22 @@ task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
   }
 });
 
+// Replicate Hardhat v3's configVariable behavior
+// Checks environment variables first, then falls back to Hardhat vars
+function configVariable(name: string): string {
+  return process.env[name] ?? vars.get(name);
+}
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY || '',
+    apiKey: configVariable('ETHERSCAN_API_KEY'),
   },
   gasReporter: {
-    coinmarketcap: process.env.COINMARKETCAP_API_KEY || '',
+    coinmarketcap: configVariable('COINMARKETCAP_API_KEY'),
     currency: 'USD',
   },
   networks: {
@@ -32,12 +38,12 @@ const config: HardhatUserConfig = {
       chainId: 1,
       forking: {
         blockNumber: 15214922,
-        url: process.env.MAINNET_RPC_ENDPOINT || '',
+        url: configVariable('MAINNET_RPC_ENDPOINT'),
       },
     },
     mainnet: {
-      // accounts: [process.env.RAINBOW_DEPLOYMENT_PKEY],
-      url: process.env.MAINNET_RPC_ENDPOINT || '',
+      // accounts: [configVariable('RAINBOW_DEPLOYMENT_PKEY')],
+      url: configVariable('MAINNET_RPC_ENDPOINT'),
     },
   },
   solidity: {
