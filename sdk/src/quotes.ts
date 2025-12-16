@@ -108,7 +108,7 @@ export const buildRainbowQuoteUrl = ({
   currency,
 }: {
   chainId: number;
-  destReceiver?: string;
+  destReceiver?: Address;
   toChainId?: number;
   sellTokenAddress: Address;
   buyTokenAddress: Address;
