@@ -641,15 +641,15 @@ export const getCrosschainQuoteExecutionDetails = (
   transactionOptions: TransactionOptions,
   provider: StaticJsonRpcProvider
 ): CrosschainQuoteExecutionDetails => {
-  const { from, data, value } = quote;
+  const { from, data, value, to } = quote;
 
-  sanityCheckAddress(quote?.to);
+  sanityCheckAddress(to);
 
   return {
     method: provider.estimateGas({
       data,
       from,
-      to: quote.to,
+      to,
       value,
     }),
     params: {
@@ -812,10 +812,22 @@ export const prepareFillQuote = async (
     };
   }
 
+  if (!swapTx.to) {
+    throw new Error('Quote must have a valid target address');
+  }
+
+  if (!swapTx.data) {
+    throw new Error('Quote must have valid transaction data');
+  }
+
+  if (!swapTx.value && !value) {
+    throw new Error('Quote must have a valid value');
+  }
+
   return {
-    data: swapTx.data || '',
-    to: swapTx.to || '',
-    value: (swapTx.value || value || '0').toString(),
+    data: swapTx.data,
+    to: swapTx.to,
+    value: (swapTx.value || value)!.toString(),
   };
 };
 
@@ -830,17 +842,21 @@ export const prepareFillCrosschainQuote = async (
   quote: CrosschainQuote,
   referrer?: string
 ): Promise<BatchCall> => {
-  const { data, value } = quote;
+  const { data, value, to } = quote;
 
-  sanityCheckAddress(quote?.to);
-
-  if (!quote.to) {
+  if (!to) {
     throw new Error('Quote must have a valid target address');
   }
 
   if (!data) {
     throw new Error('Quote must have valid transaction data');
   }
+
+  if (!value) {
+    throw new Error('Quote must have a valid value');
+  }
+
+  sanityCheckAddress(to);
 
   let txData = data;
   if (referrer) {
@@ -849,7 +865,7 @@ export const prepareFillCrosschainQuote = async (
 
   return {
     data: txData,
-    to: quote.to,
-    value: (value || '0').toString(),
+    to: to,
+    value: value.toString(),
   };
 };
