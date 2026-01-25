@@ -1,4 +1,4 @@
-![Rainbow Swaps Image](gh.png)
+![Rainbow Swaps Image](.github/hero.png)
 
 # 🌈  Rainbow Swaps 
 

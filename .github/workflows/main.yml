@@ -10,50 +10,55 @@ on:
 jobs:
   smart-contracts:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: smart-contracts
     env:
       MAINNET_RPC_ENDPOINT: ${{ secrets.MAINNET_RPC_ENDPOINT }}
       COINMARKETCAP_API_KEY: ${{ secrets.COINMARKETCAP_API_KEY }}
+      ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.16.0
-          cache: yarn
+          node-version-file: smart-contracts/.nvmrc
+          cache: 'yarn'
           cache-dependency-path: smart-contracts/yarn.lock
       - name: Smart contracts setup
         run: |
-          cd smart-contracts
-          yarn install
+          yarn install --immutable
           yarn compile
           yarn lint
       - name: run smart-contracts base tests
-        run: |
-            cd smart-contracts
-            yarn test test/base/*.* || yarn test test/base/*.*
+        run: yarn test test/base/*.* || yarn test test/base/*.*
       - name: Run Slither
         uses: crytic/slither-action@main
         id: slither
         with:
-          node-version: '16.16.0'
           target: 'smart-contracts'
+          use-docker: false
+          ignore-compile: true
           slither-args: '--exclude assembly,low-level-calls,solc-version,pragma,naming-convention,external-function,too-many-digits,block-timestamp,immutable-states'
 
   sdk:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: yarn
+          node-version-file: sdk/.nvmrc
+          cache: 'yarn'
           cache-dependency-path: sdk/yarn.lock
-      - name: Smart contracts setup
-        run: |
-          cd sdk
-          yarn install
+      - name: SDK setup
+        run: yarn install --immutable
       - name: Run tests
-        run: |
-          cd sdk
-          yarn test
+        run: yarn test

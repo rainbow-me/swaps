@@ -1,3 +1,6 @@
-.idea/**
-sdk/*.tgz
-node_modules/
+# Editor/IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
