@@ -1,6 +1,7 @@
 import { BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import type { Address } from 'ox/Address';
+import type { Hex } from 'ox/Hex';
 
 export enum ChainId {
   mainnet = 1,
@@ -113,7 +114,7 @@ export interface Quote {
   source?: Source;
   from: Address;
   to?: Address;
-  data?: string;
+  data?: Hex;
   value?: BigNumberish;
   sellAmount: BigNumberish;
   sellAmountDisplay: BigNumberish;

@@ -1,10 +1,11 @@
 import { Signer } from '@ethersproject/abstract-signer';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { Contract } from '@ethersproject/contracts';
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
 import { Wallet } from '@ethersproject/wallet';
 import type { Address } from 'ox/Address';
+import type { Hex } from 'ox/Hex';
 import RainbowRouterABI from './abi/RainbowRouter.json';
 import SwapRouter02ABI from './abi/SwapRouter02.json';
 import {
@@ -664,9 +665,9 @@ export const getCrosschainQuoteExecutionDetails = (
  * Interface for batch call data compatible with EIP-7702 batching
  */
 export interface BatchCall {
-  to: string;
-  value: string;
-  data: string;
+  to: Address;
+  value: BigNumberish;
+  data: Hex;
 }
 
 /**
@@ -695,7 +696,7 @@ export const prepareFillQuote = async (
 
   const ABI = quote.fallback ? SwapRouter02ABI : RainbowRouterABI;
   const instance = new Contract(targetContract, ABI, wallet);
-  let swapTx;
+  let swapTx: PopulatedTransaction;
 
   const {
     sellTokenAddress,
@@ -826,8 +827,8 @@ export const prepareFillQuote = async (
   }
 
   return {
-    data: swapTx.data,
-    to: swapTx.to,
+    data: swapTx.data as Hex,
+    to: swapTx.to as Address,
     value: (swapTx.value || value)!.toString(),
   };
 };
