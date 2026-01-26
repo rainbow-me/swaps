@@ -60,12 +60,29 @@ const estimatedGas = await method(methodArgs);
 ```typescript
 import { fillQuote } from '@rainbow-me/swaps';
 
-const tx = await fillQuote(
+const hash = await fillQuote(
   quote,                // quote returned from getQuote
   transactionOptions,   // gasLimit, maxFeePerGas, maxPriorityFeePerGas, nonce, value, from
   permit,               // true if you want to use the permit
   chainId               // numeric chain id
 );
+```
+
+### Prepare fill quote transaction
+
+```typescript
+import { prepareFillQuote } from '@rainbow-me/swaps';
+
+const transaction = await prepareFillQuote(
+  quote,                // quote returned from getQuote
+  transactionOptions,   // gasLimit, maxFeePerGas, maxPriorityFeePerGas, nonce, value, from
+  wallet,               // ethers signer
+  permit,               // true if you want to use the permit
+  chainId               // numeric chain id
+);
+
+// Returns a populated transaction object that can be sent later
+const hash = await wallet.sendTransaction(transaction);
 ```
 
 ## Features
