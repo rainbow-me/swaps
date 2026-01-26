@@ -53,9 +53,9 @@ export function configureSDK(options: { apiBaseUrl?: string }) {
  * Function to get the rainbow router contract address based on the chainId
  *
  * @param {ChainId} chainId
- * @returns {string}
+ * @returns {Address}
  */
-export const getRainbowRouterContractAddress = (chainId: ChainId) => {
+export const getRainbowRouterContractAddress = (chainId: ChainId): Address => {
   if (chainId === ChainId.zora) {
     return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
   } else if (chainId === ChainId.unichain) {
@@ -470,7 +470,7 @@ const calculateDeadline = async (wallet: Wallet) => {
  * Helper function to check if a target contract is allowed
  */
 export const isAllowedTargetContract = (
-  targetContract: string,
+  targetContract: Address,
   chainId: ChainId
 ) => {
   const rainbowRouterContractAddress =
@@ -486,7 +486,7 @@ export const isAllowedTargetContract = (
  * Function to get the target contract address for a quote
  *
  * @param {Quote} quote
- * @returns {string}
+ * @returns {Address}
  */
 export const getTargetAddress = (quote: Quote) => {
   if (quote.fallback) {
