@@ -24,10 +24,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
       - name: Create Release Pull Request
-        uses: changesets/action@v1
+        uses: changesets/action@v1.5.1
         with:
           title: 'chore: version packages'
           commit: 'chore: version packages'
-          cwd: ${{ github.workspace }}/sdk
+          cwd: sdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
