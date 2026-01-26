@@ -8,9 +8,10 @@ import {
   SignTypedDataVersion,
   TypedDataUtils,
 } from '@metamask/eth-sig-util';
+import type { Address } from 'ox/Address';
 import DAIAbi from '../abi/DAI.json';
 import IERC2612Abi from '../abi/IERC2612.json';
-import { ChainId, EthereumAddress } from '../types';
+import { ChainId } from '../types';
 import { DAI, TORN_ADDRESS, VSP_ADDRESS, WNXM_ADDRESS } from './constants';
 
 const EIP712_DOMAIN_TYPE = [
@@ -22,19 +23,19 @@ const EIP712_DOMAIN_TYPE = [
 
 export interface MessageParam {
   nonce: number;
-  spender: EthereumAddress;
-  holder?: EthereumAddress;
+  spender: Address;
+  holder?: Address;
   allowed?: boolean;
   expiry?: number;
   value?: BigNumberish;
   deadline?: number;
-  owner?: EthereumAddress;
+  owner?: Address;
 }
 
 export interface DomainParam {
   chainId: ChainId;
   name: string;
-  verifyingContract: EthereumAddress;
+  verifyingContract: Address;
   version?: string;
 }
 
@@ -42,7 +43,7 @@ const getDomainSeparator = async (
   name: string,
   version: string,
   chainId: ChainId,
-  verifyingContract: EthereumAddress
+  verifyingContract: Address
 ) => {
   return (
     '0x' +
@@ -56,10 +57,10 @@ const getDomainSeparator = async (
 };
 
 const getPermitVersion = async (
-  token: { version: () => any; DOMAIN_SEPARATOR: () => any; address: string },
+  token: { version: () => any; DOMAIN_SEPARATOR: () => any; address: Address },
   name: string,
   chainId: ChainId,
-  verifyingContract: EthereumAddress
+  verifyingContract: Address
 ) => {
   try {
     const version = await token.version();
@@ -93,7 +94,7 @@ const getPermitVersion = async (
   }
 };
 
-const getNonces = async (token: Contract, owner: EthereumAddress) => {
+const getNonces = async (token: Contract, owner: Address) => {
   try {
     const nonce = await token.nonces(owner);
     return nonce;
@@ -131,9 +132,9 @@ const PERMIT_ALLOWED_TYPE = [
 
 export async function signPermit(
   wallet: Wallet,
-  tokenAddress: EthereumAddress,
-  owner: EthereumAddress,
-  spender: EthereumAddress,
+  tokenAddress: Address,
+  owner: Address,
+  spender: Address,
   value: BigNumberish,
   deadline: BigNumberish,
   chainId: number
@@ -150,7 +151,7 @@ export async function signPermit(
   const name = await token.name();
   const [nonce, version] = await Promise.all([
     getNonces(token, owner),
-    getPermitVersion(token as any, name, chainId, token.address),
+    getPermitVersion(token as any, name, chainId, token.address as Address),
   ]);
 
   const message: MessageParam = {
@@ -171,7 +172,7 @@ export async function signPermit(
   const domain: DomainParam = {
     chainId,
     name,
-    verifyingContract: token.address,
+    verifyingContract: token.address as Address,
   };
   if (version !== null) {
     domain.version = version;

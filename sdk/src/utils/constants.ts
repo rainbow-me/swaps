@@ -1,27 +1,28 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { ChainId, EthereumAddress } from '../types';
-export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+import type { Address } from 'ox/Address';
+import { ChainId } from '../types';
+export const ETH_ADDRESS: Address = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 export const API_BASE_URL = 'https://swap.p.rainbow.me';
-export const RAINBOW_ROUTER_CONTRACT_ADDRESS =
+export const RAINBOW_ROUTER_CONTRACT_ADDRESS: Address =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
 
-export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA =
+export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA: Address =
   '0xa61550e9ddd2797e16489db09343162be98d9483';
 
-export const RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN =
+export const RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN: Address =
   '0x2a0332e28913a06fa924d40a3e2160f763010417';
-export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ABSTRACT =
+export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ABSTRACT: Address =
   '0x10b65E60ae95B2bD68BfCaE31E1100369Bd01818';
-export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC =
+export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC: Address =
   '0x10b65E60ae95B2bD68BfCaE31E1100369Bd01818';
-export const RAINBOW_ROUTER_CONTRACT_ADDRESS_GNOSIS =
+export const RAINBOW_ROUTER_CONTRACT_ADDRESS_GNOSIS: Address =
   '0x9188e9b4dabaa1ff4e75092404c223bf69cab9b7';
 
 export type MultiChainAsset = {
-  [key: string]: EthereumAddress;
+  [key: string]: Address;
 };
 
-export const AMM_CONTRACT_ADDRESSES: Record<ChainId, string> = {
+export const AMM_CONTRACT_ADDRESSES: Record<ChainId, Address> = {
   [ChainId.mainnet]: '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45',
   [ChainId.ropsten]: '0x0000000000000000000000000000000000000000',
   [ChainId.kovan]: '0x0000000000000000000000000000000000000000',
@@ -66,10 +67,10 @@ export const AMM_CONTRACT_ADDRESSES: Record<ChainId, string> = {
 export const DAI: MultiChainAsset = {
   [`${ChainId.mainnet}`]: '0x6b175474e89094c44da98b954eedeac495271d0f',
 };
-export const USDC_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-export const TORN_ADDRESS = '0x77777feddddffc19ff86db637967013e6c6a116c';
-export const WNXM_ADDRESS = '0x0d438f3b5175bebc262bf23753c1e53d03432bde';
-export const VSP_ADDRESS = '0x1b40183efb4dd766f11bda7a7c3ad8982e998421';
+export const USDC_ADDRESS: Address = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+export const TORN_ADDRESS: Address = '0x77777feddddffc19ff86db637967013e6c6a116c';
+export const WNXM_ADDRESS: Address = '0x0d438f3b5175bebc262bf23753c1e53d03432bde';
+export const VSP_ADDRESS: Address = '0x1b40183efb4dd766f11bda7a7c3ad8982e998421';
 export const MAX_INT = BigNumber.from('2').pow('256').sub('1').toString();
 export const PERMIT_EXPIRATION_TS = 3600;
 

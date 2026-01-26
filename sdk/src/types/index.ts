@@ -1,5 +1,7 @@
 import { BigNumberish } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
+import type { Address } from 'ox/Address';
+import type { Hex } from 'ox/Hex';
 
 export enum ChainId {
   mainnet = 1,
@@ -62,23 +64,37 @@ export enum SwapType {
   unwrap = 'unwrap',
 }
 
-export type EthereumAddress = string;
+export type Currency =
+  | 'ETH'
+  | 'USD'
+  | 'EUR'
+  | 'GBP'
+  | 'AUD'
+  | 'CNY'
+  | 'KRW'
+  | 'RUB'
+  | 'INR'
+  | 'JPY'
+  | 'TRY'
+  | 'CAD'
+  | 'NZD'
+  | 'ZAR';
 
 // QuoteParams are the parameters required to get a quote from the Swap API
 export interface QuoteParams {
   source?: Source;
   chainId: number;
-  fromAddress: EthereumAddress;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  fromAddress: Address;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   sellAmount?: BigNumberish;
   buyAmount?: BigNumberish;
   slippage: number;
-  destReceiver?: EthereumAddress;
+  destReceiver?: Address;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
   toChainId?: number;
-  currency: string;
+  currency: Currency;
 }
 
 export interface ProtocolShare {
@@ -96,17 +112,17 @@ export interface QuoteError {
 // Quote is the response from the Swap API
 export interface Quote {
   source?: Source;
-  from: EthereumAddress;
-  to?: EthereumAddress;
-  data?: string;
+  from: Address;
+  to?: Address;
+  data?: Hex;
   value?: BigNumberish;
   sellAmount: BigNumberish;
   sellAmountDisplay: BigNumberish;
   sellAmountInEth: BigNumberish;
   sellAmountMinusFees: BigNumberish;
-  sellTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
   sellTokenAsset?: TokenAsset;
-  buyTokenAddress: EthereumAddress;
+  buyTokenAddress: Address;
   buyTokenAsset?: TokenAsset;
   buyAmount: BigNumberish;
   buyAmountDisplay: BigNumberish;
@@ -138,7 +154,7 @@ export interface TokenAsset {
   name: string;
   network: string;
   symbol: string;
-  networks: Partial<Record<ChainId, { address: string; decimals: number }>>;
+  networks: Partial<Record<ChainId, { address: Address; decimals: number }>>;
   chainId: ChainId;
   price: TokenPrice;
   totalPrice: TokenPrice;
@@ -158,7 +174,7 @@ export interface Reward {
     name: string;
     network: string;
     symbol: string;
-    networks: Record<ChainId, { address: string; decimals: number }>;
+    networks: Record<ChainId, { address: Address; decimals: number }>;
   };
 }
 
@@ -198,8 +214,8 @@ interface SocketRoute {
     [chaind: string]: BigNumberish;
   };
   totalUserTx: number;
-  sender: EthereumAddress;
-  recipient: EthereumAddress;
+  sender: Address;
+  recipient: Address;
   totalGasFeesInUsd: BigNumberish;
   userTxs: {
     userTxType: string;
@@ -209,12 +225,12 @@ interface SocketRoute {
     toAsset: SocketAsset;
     stepCount: number;
     routePath: string;
-    sender: EthereumAddress;
+    sender: Address;
     approvalData: {
       minimumApprovalAmount: number;
-      approvalTokenAddress: EthereumAddress;
-      allowanceTarget: EthereumAddress;
-      owner: EthereumAddress;
+      approvalTokenAddress: Address;
+      allowanceTarget: Address;
+      owner: Address;
     } | null;
     steps: {
       type: string;
@@ -235,7 +251,7 @@ interface SocketRoute {
     gasFees: SocketGasFees;
     serviceTime: number;
     maxServiceTime: number;
-    recipient: EthereumAddress;
+    recipient: Address;
     bridgeSlippage: number;
     userTxIndex: number;
   }[];
@@ -247,7 +263,7 @@ interface SocketRefuelData {
   fromAmount: string;
   toAmount: string;
   gasFees: SocketGasFees;
-  recipient: EthereumAddress;
+  recipient: Address;
   serviceTime: number;
   fromAsset: SocketAsset;
   toAsset: SocketAsset;
@@ -256,7 +272,7 @@ interface SocketRefuelData {
 }
 
 interface SocketAsset {
-  address: EthereumAddress;
+  address: Address;
   chainAgnosticId: number | null;
   chainId: number;
   decimals: number;
@@ -300,12 +316,12 @@ export interface TransactionOptions {
   maxPriorityFeePerGas?: string;
   nonce?: string;
   value?: number | BigNumberish;
-  from?: EthereumAddress;
+  from?: Address;
 }
 
 export interface QuoteExecutionDetails {
   method: any;
-  methodArgs: (string | number | BigNumberish | EthereumAddress | undefined)[];
+  methodArgs: (string | number | BigNumberish | Address | undefined)[];
   params: TransactionOptions;
   methodName: string;
   router: Contract;
@@ -318,8 +334,8 @@ export interface CrosschainQuoteExecutionDetails {
 
 export interface SlippageParams {
   chainId: number;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   sellAmount?: BigNumberish;
   buyAmount?: BigNumberish;
   toChainId?: number;

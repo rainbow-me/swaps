@@ -1,3 +1,5 @@
+import type { Address } from "ox/Address";
+
 /**
  * sanityCheckAddress ensures the integrity and correctness of the destination address to prevent transactions to null address
  *
@@ -7,10 +9,10 @@
  *   - No destination address is defined in the SDK for the provided (source, chainID) combination.
  *   - The provided quote's destination address does not case-insensitively match the SDK's stored destination address.
  */
-export function sanityCheckAddress(assertedAddress: string | undefined) {
+export function sanityCheckAddress(assertedAddress: Address | undefined) {
   if (
     assertedAddress === undefined ||
-    assertedAddress === '' ||
+    assertedAddress?.length === 0 ||
     assertedAddress === '0x0000000000000000000000000000000000000000'
   ) {
     throw new Error(`provided address is not defined (API issue)`);

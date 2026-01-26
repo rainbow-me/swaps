@@ -28,6 +28,6 @@ jobs:
         with:
           title: 'chore: version packages'
           commit: 'chore: version packages'
-          cwd: sdk
+          cwd: ${{ github.workspace }}/sdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

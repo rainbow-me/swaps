@@ -1,3 +1,4 @@
+import type { Address } from 'ox/Address';
 import { sanityCheckAddress } from '../../src/utils/sanity_check';
 
 describe('sanityCheckAddress', () => {
@@ -8,7 +9,7 @@ describe('sanityCheckAddress', () => {
   });
   it('should throw on invalid address', () => {
     expect(() => {
-      sanityCheckAddress('');
+      sanityCheckAddress('' as Address);
     }).toThrow('provided address is not defined');
   });
 });

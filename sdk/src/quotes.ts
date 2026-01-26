@@ -1,16 +1,18 @@
 import { Signer } from '@ethersproject/abstract-signer';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { Contract } from '@ethersproject/contracts';
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Transaction } from '@ethersproject/transactions';
 import { Wallet } from '@ethersproject/wallet';
+import type { Address } from 'ox/Address';
+import type { Hex } from 'ox/Hex';
 import RainbowRouterABI from './abi/RainbowRouter.json';
 import SwapRouter02ABI from './abi/SwapRouter02.json';
 import {
   ChainId,
   CrosschainQuote,
   CrosschainQuoteExecutionDetails,
-  EthereumAddress,
+  Currency,
   Quote,
   QuoteError,
   QuoteExecutionDetails,
@@ -52,9 +54,9 @@ export function configureSDK(options: { apiBaseUrl?: string }) {
  * Function to get the rainbow router contract address based on the chainId
  *
  * @param {ChainId} chainId
- * @returns {string}
+ * @returns {Address}
  */
-export const getRainbowRouterContractAddress = (chainId: ChainId) => {
+export const getRainbowRouterContractAddress = (chainId: ChainId): Address => {
   if (chainId === ChainId.zora) {
     return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
   } else if (chainId === ChainId.unichain) {
@@ -73,9 +75,9 @@ export const getRainbowRouterContractAddress = (chainId: ChainId) => {
  * Function to get the amm contract address based on the chainId
  *
  * @param {ChainId} chainId
- * @returns {string}
+ * @returns {Address | undefined}
  */
-export const getAmmContractAddress = (chainId: ChainId): string | undefined => {
+export const getAmmContractAddress = (chainId: ChainId): Address | undefined => {
   return AMM_CONTRACT_ADDRESSES[chainId];
 };
 
@@ -83,11 +85,11 @@ export const getAmmContractAddress = (chainId: ChainId): string | undefined => {
  * Function to get a swap formatted quote url to use with backend
  *
  * @param {ChainId} params.chainId
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.buyAmount
  * @param {BigNumberish} params.sellAmount
- * @param {EthereumAddress} params.fromAddress
+ * @param {Address} params.fromAddress
  * @param {string} params.source
  * @param {number} params.feePercentageBasisPoints
  * @param {number} params.slippage
@@ -107,17 +109,17 @@ export const buildRainbowQuoteUrl = ({
   currency,
 }: {
   chainId: number;
-  destReceiver?: string;
+  destReceiver?: Address;
   toChainId?: number;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   buyAmount?: BigNumberish;
   sellAmount?: BigNumberish;
-  fromAddress: EthereumAddress;
+  fromAddress: Address;
   feePercentageBasisPoints?: number;
   source?: Source;
   slippage: number;
-  currency: string;
+  currency: Currency;
 }) => {
   const searchParams = new URLSearchParams({
     allowFallback: String(true),
@@ -145,10 +147,10 @@ export const buildRainbowQuoteUrl = ({
  *
  * @param {ChainId} params.chainId
  * @param {ChainId} params.toChainId
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.sellAmount
- * @param {EthereumAddress} params.fromAddress
+ * @param {Address} params.fromAddress
  * @param {number} params.slippage
  * @param {boolean} params.refuel
  * @param {number?} params.feePercentageBasisPoints
@@ -169,20 +171,20 @@ export const buildRainbowCrosschainQuoteUrl = ({
 }: {
   chainId: number;
   toChainId?: number;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   sellAmount?: BigNumberish;
-  fromAddress: EthereumAddress;
-  destReceiver?: EthereumAddress;
+  fromAddress: Address;
+  destReceiver?: Address;
   slippage: number;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
-  currency: string;
+  currency: Currency;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
-    currency,
+    currency: currency.toLowerCase(),
     fromAddress,
     refuel: String(refuel),
     sellAmount: String(sellAmount),
@@ -217,20 +219,20 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
 }: {
   chainId: number;
   toChainId?: number;
-  sellTokenAddress: EthereumAddress;
-  buyTokenAddress: EthereumAddress;
+  sellTokenAddress: Address;
+  buyTokenAddress: Address;
   sellAmount?: BigNumberish;
-  fromAddress: EthereumAddress;
-  destReceiver?: EthereumAddress;
+  fromAddress: Address;
+  destReceiver?: Address;
   slippage: number;
   refuel?: boolean;
-  currency: string;
+  currency: Currency;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
     chainId: String(chainId),
     claim: String(true),
-    currency,
+    currency: currency.toLowerCase(),
     feePercentageBasisPoints: '0',
     fromAddress,
     refuel: String(refuel),
@@ -284,9 +286,9 @@ export const getMinRefuelAmount = async (params: {
  * @param {QuoteParams} params
  * @param {Source} params.source
  * @param {ChainId} params.chainId
- * @param {EthereumAddress} params.fromAddress
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.fromAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.sellAmount
  * @param {BigNumberish} params.buyAmount
  * @param {number} params.slippage
@@ -343,9 +345,9 @@ export const getQuote = async (
  * @param {QuoteParams} params
  * @param {ChainId} params.chainId
  * @param {ChainId} params.toChainId
- * @param {EthereumAddress} params.fromAddress
- * @param {EthereumAddress} params.sellTokenAddress
- * @param {EthereumAddress} params.buyTokenAddress
+ * @param {Address} params.fromAddress
+ * @param {Address} params.sellTokenAddress
+ * @param {Address} params.buyTokenAddress
  * @param {BigNumberish} params.sellAmount
  * @param {number} params.slippage
  * @param {boolean} params.refuel
@@ -469,7 +471,7 @@ const calculateDeadline = async (wallet: Wallet) => {
  * Helper function to check if a target contract is allowed
  */
 export const isAllowedTargetContract = (
-  targetContract: string,
+  targetContract: Address,
   chainId: ChainId
 ) => {
   const rainbowRouterContractAddress =
@@ -485,7 +487,7 @@ export const isAllowedTargetContract = (
  * Function to get the target contract address for a quote
  *
  * @param {Quote} quote
- * @returns {string}
+ * @returns {Address}
  */
 export const getTargetAddress = (quote: Quote) => {
   if (quote.fallback) {
@@ -663,9 +665,9 @@ export const getCrosschainQuoteExecutionDetails = (
  * Interface for batch call data compatible with EIP-7702 batching
  */
 export interface BatchCall {
-  to: string;
-  value: string;
-  data: string;
+  to: Address;
+  value: BigNumberish;
+  data: Hex;
 }
 
 /**
@@ -694,7 +696,7 @@ export const prepareFillQuote = async (
 
   const ABI = quote.fallback ? SwapRouter02ABI : RainbowRouterABI;
   const instance = new Contract(targetContract, ABI, wallet);
-  let swapTx;
+  let swapTx: PopulatedTransaction;
 
   const {
     sellTokenAddress,
@@ -728,7 +730,7 @@ export const prepareFillQuote = async (
           wallet as Wallet,
           sellTokenAddress,
           quote.from,
-          instance.address,
+          instance.address as Address,
           MAX_INT,
           deadline,
           chainId
@@ -766,7 +768,7 @@ export const prepareFillQuote = async (
           wallet as Wallet,
           sellTokenAddress,
           quote.from,
-          instance.address,
+          instance.address as Address,
           MAX_INT,
           deadline,
           chainId
@@ -825,8 +827,8 @@ export const prepareFillQuote = async (
   }
 
   return {
-    data: swapTx.data,
-    to: swapTx.to,
+    data: swapTx.data as Hex,
+    to: swapTx.to as Address,
     value: (swapTx.value || value)!.toString(),
   };
 };

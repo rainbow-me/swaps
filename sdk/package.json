@@ -16,6 +16,7 @@
     "start": "tsdx watch",
     "build": "tsdx build --ignore-pattern tests/*",
     "test": "tsdx test --passWithNoTests",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext js,ts,jsx,tsx",
     "prepack": "tsdx build",
     "size": "size-limit",
@@ -59,7 +60,7 @@
     "size-limit": "^5.0.3",
     "tsdx": "^0.14.1",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.3"
+    "typescript": "5.5.4"
   },
   "dependencies": {
     "@ethereumjs/util": "9.0.0",
@@ -74,7 +75,8 @@
     "@ethersproject/strings": "5.7.0",
     "@ethersproject/transactions": "5.7.0",
     "@ethersproject/wallet": "5.7.0",
-    "@metamask/eth-sig-util": "7.0.0"
+    "@metamask/eth-sig-util": "7.0.0",
+    "ox": "0.9.14"
   },
   "resolutions": {
     "node-notifier": "8.0.1",
