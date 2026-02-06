@@ -8,6 +8,9 @@
   - `prepareFillQuote`: Extracts transaction data from regular quotes without executing
   - `prepareFillCrosschainQuote`: Extracts transaction data from crosschain quotes without executing
   - `BatchCall` interface - Standardized format for transaction data `({ data, to, value })`
+- 9dd0c66: Improved API type safety:
+  - Replaced the loose `EthereumAddress` string alias with `Address` and `Hex` types from `ox` (the `viem` standard library)
+  - Added a static `Currency` union type for fiat currency parameters
 
 ## 0.40.0
 
