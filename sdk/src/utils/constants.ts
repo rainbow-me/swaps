@@ -2,7 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import type { Address } from 'ox/Address';
 import { ChainId } from '../types';
 export const ETH_ADDRESS: Address = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-export const API_BASE_URL = 'https://swap.p.rainbow.me';
+export const API_BASE_URL = 'https://swap.s.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS: Address =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
 
