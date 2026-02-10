@@ -23,7 +23,7 @@
     "analyze": "size-limit --why",
     "changeset": "changeset",
     "release": "yarn release:verify-git && yarn release:publish && yarn release:github",
-    "release:verify-git": "git diff --exit-code && git rev-parse --abbrev-ref HEAD | grep -q \"main\"",
+    "release:verify-git": "git diff --exit-code && git rev-parse --abbrev-ref HEAD | grep -q main",
     "release:publish": "yarn build && changeset publish --tag latest && git push --follow-tags",
     "release:github": "TAG=$(git describe --tags --abbrev=0) && awk '/^## /{if(p++)exit;next}p' CHANGELOG.md | gh release create \"$TAG\" --notes-file -"
   },
