@@ -197,7 +197,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
     ...(destReceiver ? { destReceiver } : {}),
   });
   return (
-    `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=5&` +
+    `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` +
     searchParams.toString()
   );
 };
@@ -244,7 +244,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
     ...(destReceiver ? { destReceiver } : {}),
   });
   return (
-    `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=5&` +
+    `${sdkConfig.apiBaseUrl}/v1/quote?bridgeVersion=4&` +
     searchParams.toString()
   );
 };
