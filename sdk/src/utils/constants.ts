@@ -1,7 +1,8 @@
-import { BigNumber } from '@ethersproject/bignumber';
+import { maxUint256 } from 'viem';
 import type { Address } from 'ox/Address';
-import { ChainId } from '../types';
-export const ETH_ADDRESS: Address = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+import { ChainId } from '../types/index.js';
+export const ETH_ADDRESS: Address =
+  '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 export const API_BASE_URL = 'https://swap.p.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS: Address =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
@@ -67,11 +68,15 @@ export const AMM_CONTRACT_ADDRESSES: Record<ChainId, Address> = {
 export const DAI: MultiChainAsset = {
   [`${ChainId.mainnet}`]: '0x6b175474e89094c44da98b954eedeac495271d0f',
 };
-export const USDC_ADDRESS: Address = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-export const TORN_ADDRESS: Address = '0x77777feddddffc19ff86db637967013e6c6a116c';
-export const WNXM_ADDRESS: Address = '0x0d438f3b5175bebc262bf23753c1e53d03432bde';
-export const VSP_ADDRESS: Address = '0x1b40183efb4dd766f11bda7a7c3ad8982e998421';
-export const MAX_INT = BigNumber.from('2').pow('256').sub('1').toString();
+export const USDC_ADDRESS: Address =
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+export const TORN_ADDRESS: Address =
+  '0x77777feddddffc19ff86db637967013e6c6a116c';
+export const WNXM_ADDRESS: Address =
+  '0x0d438f3b5175bebc262bf23753c1e53d03432bde';
+export const VSP_ADDRESS: Address =
+  '0x1b40183efb4dd766f11bda7a7c3ad8982e998421';
+export const MAX_INT = maxUint256.toString();
 export const PERMIT_EXPIRATION_TS = 3600;
 
 export type PermitSupportedTokenList = {

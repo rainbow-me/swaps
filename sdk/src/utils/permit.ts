@@ -1,90 +1,61 @@
-import { addHexPrefix } from '@ethereumjs/util';
-import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { splitSignature } from '@ethersproject/bytes';
-import { Contract } from '@ethersproject/contracts';
-import { Wallet } from '@ethersproject/wallet';
-import {
-  signTypedData,
-  SignTypedDataVersion,
-  TypedDataUtils,
-} from '@metamask/eth-sig-util';
 import type { Address } from 'ox/Address';
-import DAIAbi from '../abi/DAI.json';
-import IERC2612Abi from '../abi/IERC2612.json';
-import { ChainId } from '../types';
-import { DAI, TORN_ADDRESS, VSP_ADDRESS, WNXM_ADDRESS } from './constants';
+import type { PublicClient, WalletClient } from 'viem';
+import { domainSeparator, parseSignature } from 'viem';
+import { erc20PermitAbi } from '../abi/abis.js';
+import type { BigIntish, PermitSignature } from '../types/index.js';
+import { ChainId } from '../types/index.js';
+import { DAI, TORN_ADDRESS, VSP_ADDRESS, WNXM_ADDRESS } from './constants.js';
 
-const EIP712_DOMAIN_TYPE = [
-  { name: 'name', type: 'string' },
-  { name: 'version', type: 'string' },
-  { name: 'chainId', type: 'uint256' },
-  { name: 'verifyingContract', type: 'address' },
-];
+const EIP2612_TYPE = [
+  { name: 'owner', type: 'address' },
+  { name: 'spender', type: 'address' },
+  { name: 'value', type: 'uint256' },
+  { name: 'nonce', type: 'uint256' },
+  { name: 'deadline', type: 'uint256' },
+] as const;
 
-export interface MessageParam {
-  nonce: number;
-  spender: Address;
-  holder?: Address;
-  allowed?: boolean;
-  expiry?: number;
-  value?: BigNumberish;
-  deadline?: number;
-  owner?: Address;
-}
-
-export interface DomainParam {
-  chainId: ChainId;
-  name: string;
-  verifyingContract: Address;
-  version?: string;
-}
-
-const getDomainSeparator = async (
-  name: string,
-  version: string,
-  chainId: ChainId,
-  verifyingContract: Address
-) => {
-  return (
-    '0x' +
-    TypedDataUtils.hashStruct(
-      'EIP712Domain',
-      { chainId, name, verifyingContract, version },
-      { EIP712Domain: EIP712_DOMAIN_TYPE },
-      SignTypedDataVersion.V4
-    ).toString('hex')
-  );
-};
+const PERMIT_ALLOWED_TYPE = [
+  { name: 'holder', type: 'address' },
+  { name: 'spender', type: 'address' },
+  { name: 'nonce', type: 'uint256' },
+  { name: 'expiry', type: 'uint256' },
+  { name: 'allowed', type: 'bool' },
+] as const;
 
 const getPermitVersion = async (
-  token: { version: () => any; DOMAIN_SEPARATOR: () => any; address: Address },
+  publicClient: PublicClient,
+  tokenAddress: Address,
   name: string,
   chainId: ChainId,
   verifyingContract: Address
-) => {
+): Promise<string | null> => {
   try {
-    const version = await token.version();
-    return version;
-  } catch (e) {
+    return await publicClient.readContract({
+      address: tokenAddress,
+      abi: erc20PermitAbi,
+      functionName: 'version',
+    });
+  } catch {
     const version = '1';
     try {
-      const domainSeparator = await token.DOMAIN_SEPARATOR();
-      const domainSeparatorValidation = await getDomainSeparator(
-        name,
-        version,
-        chainId,
-        verifyingContract
-      );
+      const onChainSeparator = await publicClient.readContract({
+        address: tokenAddress,
+        abi: erc20PermitAbi,
+        functionName: 'DOMAIN_SEPARATOR',
+      });
+      const computedSeparator = domainSeparator({
+        domain: { name, version, chainId, verifyingContract },
+      });
 
-      if (domainSeparator === domainSeparatorValidation) {
+      if (onChainSeparator === computedSeparator) {
         return version;
       }
-    } catch (_) {
+    } catch {
       if (
         chainId === 1 &&
         [TORN_ADDRESS, WNXM_ADDRESS, VSP_ADDRESS]
           .map((t) => t.toLowerCase())
-          .indexOf(token.address.toLowerCase()) !== -1
+          .indexOf(tokenAddress.toLowerCase()) !== -1
       ) {
         return '1';
       }
@@ -94,123 +65,104 @@ const getPermitVersion = async (
   }
 };
 
-const getNonces = async (token: Contract, owner: Address) => {
+const getNonces = async (
+  publicClient: PublicClient,
+  tokenAddress: Address,
+  owner: Address
+): Promise<bigint> => {
   try {
-    const nonce = await token.nonces(owner);
-    return nonce;
-  } catch (e) {
+    return await publicClient.readContract({
+      address: tokenAddress,
+      abi: erc20PermitAbi,
+      functionName: 'nonces',
+      args: [owner],
+    });
+  } catch {
     try {
-      const nonce = await token._nonces(owner);
-      return nonce;
-    } catch (e) {
-      return 0;
+      return await publicClient.readContract({
+        address: tokenAddress,
+        abi: erc20PermitAbi,
+        functionName: '_nonces',
+        args: [owner],
+      });
+    } catch {
+      return 0n;
     }
   }
 };
 
-const EIP712_DOMAIN_TYPE_NO_VERSION = [
-  { name: 'name', type: 'string' },
-  { name: 'chainId', type: 'uint256' },
-  { name: 'verifyingContract', type: 'address' },
-];
-
-const EIP2612_TYPE = [
-  { name: 'owner', type: 'address' },
-  { name: 'spender', type: 'address' },
-  { name: 'value', type: 'uint256' },
-  { name: 'nonce', type: 'uint256' },
-  { name: 'deadline', type: 'uint256' },
-];
-
-const PERMIT_ALLOWED_TYPE = [
-  { name: 'holder', type: 'address' },
-  { name: 'spender', type: 'address' },
-  { name: 'nonce', type: 'uint256' },
-  { name: 'expiry', type: 'uint256' },
-  { name: 'allowed', type: 'bool' },
-];
-
 export async function signPermit(
-  wallet: Wallet,
+  publicClient: PublicClient,
+  walletClient: WalletClient,
   tokenAddress: Address,
   owner: Address,
   spender: Address,
-  value: BigNumberish,
-  deadline: BigNumberish,
+  value: BigIntish,
+  deadline: BigIntish,
   chainId: number
-): Promise<any> {
+): Promise<PermitSignature> {
+  if (!walletClient.account) {
+    throw new Error('WalletClient must have an account to sign permits');
+  }
+
   const isDaiStylePermit =
     tokenAddress.toLowerCase() === DAI[chainId]?.toLowerCase();
 
-  const token = new Contract(
-    tokenAddress,
-    isDaiStylePermit ? DAIAbi : IERC2612Abi,
-    wallet
-  );
-
-  const name = await token.name();
-  const [nonce, version] = await Promise.all([
-    getNonces(token, owner),
-    getPermitVersion(token as any, name, chainId, token.address as Address),
-  ]);
-
-  const message: MessageParam = {
-    nonce: Number(nonce.toString()),
-    spender,
-  };
-
-  if (isDaiStylePermit) {
-    message.holder = owner;
-    message.allowed = true;
-    message.expiry = Number(deadline.toString());
-  } else {
-    message.value = BigNumber.from(value).toHexString();
-    message.deadline = Number(deadline.toString());
-    message.owner = owner;
-  }
-
-  const domain: DomainParam = {
-    chainId,
-    name,
-    verifyingContract: token.address as Address,
-  };
-  if (version !== null) {
-    domain.version = version;
-  }
-
-  const types = {
-    EIP712Domain:
-      version !== null ? EIP712_DOMAIN_TYPE : EIP712_DOMAIN_TYPE_NO_VERSION,
-    Permit: isDaiStylePermit ? PERMIT_ALLOWED_TYPE : EIP2612_TYPE,
-  };
-
-  const data = {
-    domain,
-    message,
-    primaryType: 'Permit',
-    types,
-  };
-
-  const privateKeyBuffer = Buffer.from(
-    addHexPrefix(wallet.privateKey).substring(2),
-    'hex'
-  );
-
-  const signature = signTypedData({
-    data: data as any,
-    privateKey: privateKeyBuffer,
-    version: SignTypedDataVersion.V4,
+  const name = await publicClient.readContract({
+    address: tokenAddress,
+    abi: erc20PermitAbi,
+    functionName: 'name',
   });
 
-  const { v, r, s } = splitSignature(signature);
+  const [nonce, version] = await Promise.all([
+    getNonces(publicClient, tokenAddress, owner),
+    getPermitVersion(publicClient, tokenAddress, name, chainId, tokenAddress),
+  ]);
+
+  const domain = {
+    name,
+    ...(version !== null ? { version } : {}),
+    chainId,
+    verifyingContract: tokenAddress,
+  };
+
+  const signature = isDaiStylePermit
+    ? await walletClient.signTypedData({
+        account: walletClient.account,
+        domain,
+        types: { Permit: PERMIT_ALLOWED_TYPE },
+        primaryType: 'Permit' as const,
+        message: {
+          holder: owner,
+          spender,
+          nonce,
+          expiry: BigInt(deadline),
+          allowed: true,
+        },
+      })
+    : await walletClient.signTypedData({
+        account: walletClient.account,
+        domain,
+        types: { Permit: EIP2612_TYPE },
+        primaryType: 'Permit' as const,
+        message: {
+          owner,
+          spender,
+          value: BigInt(value),
+          nonce,
+          deadline: BigInt(deadline),
+        },
+      });
+
+  const { v, r, s } = parseSignature(signature);
 
   return {
-    deadline,
-    isDaiStylePermit,
+    value: isDaiStylePermit ? 0n : BigInt(value),
     nonce,
+    deadline: BigInt(deadline),
+    isDaiStylePermit,
+    v: Number(v),
     r,
     s,
-    v,
-    value: message.value || BigNumber.from('0').toHexString(),
   };
 }

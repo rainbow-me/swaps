@@ -1,13 +1,9 @@
-import { Signer } from '@ethersproject/abstract-signer';
-import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { Contract, PopulatedTransaction } from '@ethersproject/contracts';
-import { StaticJsonRpcProvider } from '@ethersproject/providers';
-import { Transaction } from '@ethersproject/transactions';
-import { Wallet } from '@ethersproject/wallet';
 import type { Address } from 'ox/Address';
 import type { Hex } from 'ox/Hex';
-import RainbowRouterABI from './abi/RainbowRouter.json';
-import SwapRouter02ABI from './abi/SwapRouter02.json';
+import type { Hash, PublicClient, WalletClient } from 'viem';
+import { encodeFunctionData } from 'viem';
+import { rainbowRouterAbi } from './abi/abis.js';
+import type { BigIntish } from './types/index.js';
 import {
   ChainId,
   CrosschainQuote,
@@ -20,7 +16,7 @@ import {
   SocketChainsData,
   Source,
   TransactionOptions,
-} from './types';
+} from './types/index.js';
 import {
   AMM_CONTRACT_ADDRESSES,
   API_BASE_URL,
@@ -33,15 +29,11 @@ import {
   RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
-} from './utils/constants';
-import { signPermit } from './utils/permit';
-import { getReferrerCode } from './utils/referrer';
-import { sanityCheckAddress } from './utils/sanity_check';
+} from './utils/constants.js';
+import { signPermit } from './utils/permit.js';
+import { getReferrerCode } from './utils/referrer.js';
+import { sanityCheckAddress } from './utils/sanity_check.js';
 
-/**
- * Configure SDK for mocking or fallback to API_BASE_URL
- *
- */
 export let sdkConfig = {
   apiBaseUrl: API_BASE_URL,
 };
@@ -50,12 +42,6 @@ export function configureSDK(options: { apiBaseUrl?: string }) {
   sdkConfig = { ...sdkConfig, ...options };
 }
 
-/**
- * Function to get the rainbow router contract address based on the chainId
- *
- * @param {ChainId} chainId
- * @returns {Address}
- */
 export const getRainbowRouterContractAddress = (chainId: ChainId): Address => {
   if (chainId === ChainId.zora) {
     return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
@@ -71,30 +57,12 @@ export const getRainbowRouterContractAddress = (chainId: ChainId): Address => {
   return RAINBOW_ROUTER_CONTRACT_ADDRESS;
 };
 
-/**
- * Function to get the amm contract address based on the chainId
- *
- * @param {ChainId} chainId
- * @returns {Address | undefined}
- */
-export const getAmmContractAddress = (chainId: ChainId): Address | undefined => {
+export const getAmmContractAddress = (
+  chainId: ChainId
+): Address | undefined => {
   return AMM_CONTRACT_ADDRESSES[chainId];
 };
 
-/**
- * Function to get a swap formatted quote url to use with backend
- *
- * @param {ChainId} params.chainId
- * @param {Address} params.sellTokenAddress
- * @param {Address} params.buyTokenAddress
- * @param {BigNumberish} params.buyAmount
- * @param {BigNumberish} params.sellAmount
- * @param {Address} params.fromAddress
- * @param {string} params.source
- * @param {number} params.feePercentageBasisPoints
- * @param {number} params.slippage
- * @returns {string}
- */
 export const buildRainbowQuoteUrl = ({
   chainId,
   destReceiver,
@@ -113,8 +81,8 @@ export const buildRainbowQuoteUrl = ({
   toChainId?: number;
   sellTokenAddress: Address;
   buyTokenAddress: Address;
-  buyAmount?: BigNumberish;
-  sellAmount?: BigNumberish;
+  buyAmount?: BigIntish;
+  sellAmount?: BigIntish;
   fromAddress: Address;
   feePercentageBasisPoints?: number;
   source?: Source;
@@ -142,20 +110,6 @@ export const buildRainbowQuoteUrl = ({
   return `${sdkConfig.apiBaseUrl}/v1/quote?` + searchParams.toString();
 };
 
-/**
- * Function to get a crosschain swap formatted quote url to use with backend
- *
- * @param {ChainId} params.chainId
- * @param {ChainId} params.toChainId
- * @param {Address} params.sellTokenAddress
- * @param {Address} params.buyTokenAddress
- * @param {BigNumberish} params.sellAmount
- * @param {Address} params.fromAddress
- * @param {number} params.slippage
- * @param {boolean} params.refuel
- * @param {number?} params.feePercentageBasisPoints
- * @returns {string}
- */
 export const buildRainbowCrosschainQuoteUrl = ({
   chainId,
   toChainId,
@@ -173,7 +127,7 @@ export const buildRainbowCrosschainQuoteUrl = ({
   toChainId?: number;
   sellTokenAddress: Address;
   buyTokenAddress: Address;
-  sellAmount?: BigNumberish;
+  sellAmount?: BigIntish;
   fromAddress: Address;
   destReceiver?: Address;
   slippage: number;
@@ -202,9 +156,6 @@ export const buildRainbowCrosschainQuoteUrl = ({
   );
 };
 
-/**
- * Function to build the swap API URI to get the claim bridge quote
- */
 export const buildRainbowClaimBridgeQuoteUrl = ({
   chainId,
   toChainId,
@@ -221,7 +172,7 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
   toChainId?: number;
   sellTokenAddress: Address;
   buyTokenAddress: Address;
-  sellAmount?: BigNumberish;
+  sellAmount?: BigIntish;
   fromAddress: Address;
   destReceiver?: Address;
   slippage: number;
@@ -249,13 +200,6 @@ export const buildRainbowClaimBridgeQuoteUrl = ({
   );
 };
 
-/**
- * Function to get a minimum amount of source chain gas token to perform a refuel swap
- *
- * @param {ChainId} params.chainId
- * @param {ChainId} params.toChainId
- * @returns {string}
- */
 export const getMinRefuelAmount = async (params: {
   chainId: ChainId;
   toChainId: ChainId;
@@ -275,26 +219,9 @@ export const getMinRefuelAmount = async (params: {
 
   if (!destinationChain) return null;
 
-  // We multiply the min amount by 2 as that is what is required according to sockets docs
-  // Ref: https://docs.socket.tech/socket-api/v2/guides/refuel-integration#refuel-as-a-middleware
-  return BigNumber.from(destinationChain.minAmount).mul(2).toString();
+  return (BigInt(destinationChain.minAmount) * 2n).toString();
 };
 
-/**
- * Function to get a quote from rainbow's swap aggregator backend
- *
- * @param {QuoteParams} params
- * @param {Source} params.source
- * @param {ChainId} params.chainId
- * @param {Address} params.fromAddress
- * @param {Address} params.sellTokenAddress
- * @param {Address} params.buyTokenAddress
- * @param {BigNumberish} params.sellAmount
- * @param {BigNumberish} params.buyAmount
- * @param {number} params.slippage
- * @param {number} params.feePercentageBasisPoints
- * @returns {Promise<Quote | null>}
- */
 export const getQuote = async (
   params: QuoteParams,
   abortSignal?: AbortSignal
@@ -339,22 +266,6 @@ export const getQuote = async (
   return quote as Quote;
 };
 
-/**
- * Function to get a crosschain swap quote from rainbow's swap aggregator backend
- *
- * @param {QuoteParams} params
- * @param {ChainId} params.chainId
- * @param {ChainId} params.toChainId
- * @param {Address} params.fromAddress
- * @param {Address} params.sellTokenAddress
- * @param {Address} params.buyTokenAddress
- * @param {BigNumberish} params.sellAmount
- * @param {number} params.slippage
- * @param {boolean} params.refuel
- * @returns {Promise<CrosschainQuote | QuoteError | null>} returns error in case the request failed or the
- *                                                         destination address is not consistent with the SDK's
- *                                                         stored destination address
- */
 export const getCrosschainQuote = async (
   params: QuoteParams,
   abortSignal?: AbortSignal
@@ -394,9 +305,6 @@ export const getCrosschainQuote = async (
   return fetchAndSanityCheckCrosschainQuote(url, abortSignal);
 };
 
-/**
- * Function to get a crosschain swap quote from rainbow's swap aggregator backend
- */
 export const getClaimBridgeQuote = async (
   params: QuoteParams,
   abortSignal?: AbortSignal
@@ -434,9 +342,6 @@ export const getClaimBridgeQuote = async (
   return fetchAndSanityCheckCrosschainQuote(url, abortSignal);
 };
 
-/**
- * Function to encapsulate logic to fetch and check a crosschain quote
- */
 const fetchAndSanityCheckCrosschainQuote = async (
   crosschainQuoteURL: string,
   abortSignal?: AbortSignal
@@ -462,14 +367,11 @@ const fetchAndSanityCheckCrosschainQuote = async (
   return quote;
 };
 
-const calculateDeadline = async (wallet: Wallet) => {
-  const { timestamp } = await wallet.provider.getBlock('latest');
-  return timestamp + PERMIT_EXPIRATION_TS;
+const calculateDeadline = async (publicClient: PublicClient) => {
+  const block = await publicClient.getBlock();
+  return Number(block.timestamp) + PERMIT_EXPIRATION_TS;
 };
 
-/**
- * Helper function to check if a target contract is allowed
- */
 export const isAllowedTargetContract = (
   targetContract: Address,
   chainId: ChainId
@@ -483,12 +385,6 @@ export const isAllowedTargetContract = (
   ].includes(targetContract.toLowerCase());
 };
 
-/**
- * Function to get the target contract address for a quote
- *
- * @param {Quote} quote
- * @returns {Address}
- */
 export const getTargetAddress = (quote: Quote) => {
   if (quote.fallback) {
     return quote.to;
@@ -496,144 +392,144 @@ export const getTargetAddress = (quote: Quote) => {
   return getRainbowRouterContractAddress(quote.chainId);
 };
 
-/**
- * Function that fills a quote onchain via rainbow's swap aggregator smart contract
- *
- * @param {Quote} quote
- * @param {TransactionOptions} transactionOptions
- * @param {Signer} wallet
- * @param {boolean} permit
- * @param {number} chainId
- * @param {string} referrer
- * @returns {Promise<Transaction>}
- */
+const requireAccount = (walletClient: WalletClient) => {
+  if (!walletClient.account) {
+    throw new Error('WalletClient must have an account attached');
+  }
+  return walletClient.account;
+};
+
 export const fillQuote = async (
   quote: Quote,
   transactionOptions: TransactionOptions,
-  wallet: Signer,
+  walletClient: WalletClient,
   permit: boolean,
   chainId: ChainId,
-  referrer?: string
-): Promise<Transaction> => {
-  // Use the prepare function to get transaction data
+  referrer?: string,
+  publicClient?: PublicClient
+): Promise<Hash> => {
+  const account = requireAccount(walletClient);
   const preparedTx = await prepareFillQuote(
     quote,
     transactionOptions,
-    wallet,
     permit,
     chainId,
-    referrer
+    referrer,
+    publicClient,
+    walletClient
   );
 
-  // Send the transaction
-  const newSwapTx = await wallet.sendTransaction({
+  return walletClient.sendTransaction({
     data: preparedTx.data,
     to: preparedTx.to,
-    value: preparedTx.value,
-    ...transactionOptions,
+    value: BigInt(preparedTx.value),
+    account,
+    chain: walletClient.chain,
   });
-
-  return newSwapTx;
 };
 
-/**
- * Function that fills a crosschain swap quote onchain via rainbow's swap aggregator smart contract
- *
- * @param {CrosschainQuote} quote
- * @param {TransactionOptions} transactionOptions
- * @param {Signer} wallet
- * @param {string} referrer
- * @returns {Promise<Transaction>}
- */
 export const fillCrosschainQuote = async (
   quote: CrosschainQuote,
-  transactionOptions: TransactionOptions,
-  wallet: Signer,
+  _transactionOptions: TransactionOptions,
+  walletClient: WalletClient,
   referrer?: string
-): Promise<Transaction> => {
-  // Use the prepare function to get transaction data
+): Promise<Hash> => {
+  const account = requireAccount(walletClient);
   const preparedTx = await prepareFillCrosschainQuote(quote, referrer);
 
-  // Send the transaction
-  const swapTx = await wallet.sendTransaction({
+  return walletClient.sendTransaction({
     data: preparedTx.data,
     to: preparedTx.to,
-    value: preparedTx.value,
-    ...transactionOptions,
+    value: BigInt(preparedTx.value),
+    account,
+    chain: walletClient.chain,
   });
-
-  return swapTx;
 };
 
 export const getQuoteExecutionDetails = (
   quote: Quote,
   transactionOptions: TransactionOptions,
-  provider: StaticJsonRpcProvider
+  publicClient: PublicClient
 ): QuoteExecutionDetails => {
-  const instance = new Contract(
-    getRainbowRouterContractAddress(quote.chainId),
-    RainbowRouterABI,
-    provider
-  );
+  const routerAddress = getRainbowRouterContractAddress(quote.chainId);
 
   const {
     sellTokenAddress,
     buyTokenAddress,
-    to,
-    data,
     fee,
     value,
     sellAmount,
     feePercentageBasisPoints,
   } = quote;
 
+  const target = quote.to ?? routerAddress;
+  const swapCallData = quote.data ?? ('0x' as Hex);
+  const optionalValue = value != null ? BigInt(value) : undefined;
   const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
 
   if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
+    const args = [buyTokenAddress, target, swapCallData, BigInt(fee)] as const;
     return {
-      method: instance.estimateGas['fillQuoteEthToToken'],
-      methodArgs: [buyTokenAddress, to, data, fee],
+      method: () =>
+        publicClient.estimateContractGas({
+          address: routerAddress,
+          abi: rainbowRouterAbi,
+          functionName: 'fillQuoteEthToToken',
+          args,
+          value: optionalValue,
+        }),
+      methodArgs: args,
       methodName: 'fillQuoteEthToToken',
-      params: {
-        ...transactionOptions,
-        value,
-      },
-      router: instance,
+      params: { ...transactionOptions, value },
+      address: routerAddress,
+      abi: rainbowRouterAbi,
     };
   } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
+    const args = [
+      sellTokenAddress,
+      target,
+      swapCallData,
+      BigInt(sellAmount),
+      BigInt(feePercentageBasisPoints),
+    ] as const;
     return {
-      method: instance.estimateGas['fillQuoteTokenToEth'],
-      methodArgs: [
-        sellTokenAddress,
-        to,
-        data,
-        sellAmount,
-        feePercentageBasisPoints,
-      ],
+      method: () =>
+        publicClient.estimateContractGas({
+          address: routerAddress,
+          abi: rainbowRouterAbi,
+          functionName: 'fillQuoteTokenToEth',
+          args,
+          value: optionalValue,
+        }),
+      methodArgs: args,
       methodName: 'fillQuoteTokenToEth',
-      params: {
-        ...transactionOptions,
-        value,
-      },
-      router: instance,
+      params: { ...transactionOptions, value },
+      address: routerAddress,
+      abi: rainbowRouterAbi,
     };
   } else {
+    const args = [
+      sellTokenAddress,
+      buyTokenAddress,
+      target,
+      swapCallData,
+      BigInt(sellAmount),
+      BigInt(fee),
+    ] as const;
     return {
-      method: instance.estimateGas['fillQuoteTokenToToken'],
-      methodArgs: [
-        sellTokenAddress,
-        buyTokenAddress,
-        to,
-        data,
-        sellAmount,
-        fee,
-      ],
+      method: () =>
+        publicClient.estimateContractGas({
+          address: routerAddress,
+          abi: rainbowRouterAbi,
+          functionName: 'fillQuoteTokenToToken',
+          args,
+          value: optionalValue,
+        }),
+      methodArgs: args,
       methodName: 'fillQuoteTokenToToken',
-      params: {
-        ...transactionOptions,
-        value,
-      },
-      router: instance,
+      params: { ...transactionOptions, value },
+      address: routerAddress,
+      abi: rainbowRouterAbi,
     };
   }
 };
@@ -641,18 +537,25 @@ export const getQuoteExecutionDetails = (
 export const getCrosschainQuoteExecutionDetails = (
   quote: CrosschainQuote,
   transactionOptions: TransactionOptions,
-  provider: StaticJsonRpcProvider
+  publicClient: PublicClient
 ): CrosschainQuoteExecutionDetails => {
-  const { from, data, value, to } = quote;
+  const { from, value } = quote;
 
-  sanityCheckAddress(to);
+  if (!quote.to) {
+    throw new Error('Crosschain quote must have a valid target address');
+  }
+  if (!quote.data) {
+    throw new Error('Crosschain quote must have valid transaction data');
+  }
+
+  sanityCheckAddress(quote.to);
 
   return {
-    method: provider.estimateGas({
-      data,
-      from,
-      to,
-      value,
+    method: publicClient.estimateGas({
+      data: quote.data,
+      account: from,
+      to: quote.to,
+      value: value != null ? BigInt(value) : undefined,
     }),
     params: {
       ...transactionOptions,
@@ -661,185 +564,171 @@ export const getCrosschainQuoteExecutionDetails = (
   };
 };
 
-/**
- * Interface for batch call data compatible with EIP-7702 batching
- */
 export interface BatchCall {
   to: Address;
-  value: BigNumberish;
+  value: BigIntish;
   data: Hex;
 }
 
-/**
- * Function that prepares a quote transaction data for batching without executing it
- *
- * @param {Quote} quote
- * @param {TransactionOptions} transactionOptions
- * @param {Signer} wallet
- * @param {boolean} permit
- * @param {number} chainId
- * @param {string} referrer
- * @returns {Promise<BatchCall>}
- */
 export const prepareFillQuote = async (
   quote: Quote,
-  transactionOptions: TransactionOptions,
-  wallet: Signer,
+  _transactionOptions: TransactionOptions,
   permit: boolean,
   chainId: ChainId,
-  referrer?: string
+  referrer?: string,
+  publicClient?: PublicClient,
+  walletClient?: WalletClient
 ): Promise<BatchCall> => {
   const targetContract = getTargetAddress(quote);
   if (!targetContract || !isAllowedTargetContract(targetContract, chainId)) {
     throw new Error('Target contract unauthorized');
   }
 
-  const ABI = quote.fallback ? SwapRouter02ABI : RainbowRouterABI;
-  const instance = new Contract(targetContract, ABI, wallet);
-  let swapTx: PopulatedTransaction;
+  let txData: Hex | undefined;
 
   const {
     sellTokenAddress,
     buyTokenAddress,
-    to,
-    data,
-    fee,
     value,
     sellAmount,
     feePercentageBasisPoints,
   } = quote;
+  const target = quote.to ?? targetContract;
+  const swapCallData = quote.data ?? ('0x' as Hex);
+  const feeAmount = BigInt(quote.fee);
+  const sellAmt = BigInt(sellAmount);
 
   if (!quote.fallback) {
     const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
 
     if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
-      swapTx = await instance.populateTransaction.fillQuoteEthToToken(
-        buyTokenAddress,
-        to,
-        data,
-        fee,
-        {
-          ...transactionOptions,
-          value,
-        }
-      );
+      txData = encodeFunctionData({
+        abi: rainbowRouterAbi,
+        functionName: 'fillQuoteEthToToken',
+        args: [buyTokenAddress, target, swapCallData, feeAmount],
+      });
     } else if (buyTokenAddress?.toLowerCase() === ethAddressLowerCase) {
       if (permit) {
-        const deadline = await calculateDeadline(wallet as Wallet);
+        if (!publicClient) {
+          throw new Error('publicClient required for permit transactions');
+        }
+        if (!walletClient) {
+          throw new Error(
+            'walletClient with account required for permit transactions'
+          );
+        }
+        const deadline = await calculateDeadline(publicClient);
         const permitSignature = await signPermit(
-          wallet as Wallet,
+          publicClient,
+          walletClient,
           sellTokenAddress,
           quote.from,
-          instance.address as Address,
+          targetContract,
           MAX_INT,
           deadline,
           chainId
         );
-        swapTx =
-          await instance.populateTransaction.fillQuoteTokenToEthWithPermit(
+        txData = encodeFunctionData({
+          abi: rainbowRouterAbi,
+          functionName: 'fillQuoteTokenToEthWithPermit',
+          args: [
             sellTokenAddress,
-            to,
-            data,
-            sellAmount,
-            feePercentageBasisPoints,
+            target,
+            swapCallData,
+            sellAmt,
+            BigInt(feePercentageBasisPoints),
             permitSignature,
-            {
-              ...transactionOptions,
-              value,
-            }
-          );
+          ],
+        });
       } else {
-        swapTx = await instance.populateTransaction.fillQuoteTokenToEth(
-          sellTokenAddress,
-          to,
-          data,
-          sellAmount,
-          feePercentageBasisPoints,
-          {
-            ...transactionOptions,
-            value,
-          }
-        );
+        txData = encodeFunctionData({
+          abi: rainbowRouterAbi,
+          functionName: 'fillQuoteTokenToEth',
+          args: [
+            sellTokenAddress,
+            target,
+            swapCallData,
+            sellAmt,
+            BigInt(feePercentageBasisPoints),
+          ],
+        });
       }
     } else {
       if (permit) {
-        const deadline = await calculateDeadline(wallet as Wallet);
+        if (!publicClient) {
+          throw new Error('publicClient required for permit transactions');
+        }
+        if (!walletClient) {
+          throw new Error(
+            'walletClient with account required for permit transactions'
+          );
+        }
+        const deadline = await calculateDeadline(publicClient);
         const permitSignature = await signPermit(
-          wallet as Wallet,
+          publicClient,
+          walletClient,
           sellTokenAddress,
           quote.from,
-          instance.address as Address,
+          targetContract,
           MAX_INT,
           deadline,
           chainId
         );
-        swapTx =
-          await instance.populateTransaction.fillQuoteTokenToTokenWithPermit(
+        txData = encodeFunctionData({
+          abi: rainbowRouterAbi,
+          functionName: 'fillQuoteTokenToTokenWithPermit',
+          args: [
             sellTokenAddress,
             buyTokenAddress,
-            to,
-            data,
-            sellAmount,
-            fee,
+            target,
+            swapCallData,
+            sellAmt,
+            feeAmount,
             permitSignature,
-            {
-              ...transactionOptions,
-              value,
-            }
-          );
+          ],
+        });
       } else {
-        swapTx = await instance.populateTransaction.fillQuoteTokenToToken(
-          sellTokenAddress,
-          buyTokenAddress,
-          to,
-          data,
-          sellAmount,
-          fee,
-          {
-            ...transactionOptions,
-            value,
-          }
-        );
+        txData = encodeFunctionData({
+          abi: rainbowRouterAbi,
+          functionName: 'fillQuoteTokenToToken',
+          args: [
+            sellTokenAddress,
+            buyTokenAddress,
+            target,
+            swapCallData,
+            sellAmt,
+            feeAmount,
+          ],
+        });
       }
     }
 
-    if (referrer) {
-      swapTx.data = `${swapTx.data}${getReferrerCode(referrer)}`;
+    if (referrer && txData) {
+      txData = `${txData}${getReferrerCode(referrer)}` as Hex;
     }
   } else {
-    swapTx = {
-      data: quote.data,
-      from: quote.from,
-      to: quote.to,
-    };
+    txData = quote.data;
   }
 
-  if (!swapTx.to) {
+  if (!targetContract) {
     throw new Error('Quote must have a valid target address');
   }
 
-  if (!swapTx.data) {
+  if (!txData) {
     throw new Error('Quote must have valid transaction data');
   }
 
-  if (!swapTx.value && !value) {
+  if (!value) {
     throw new Error('Quote must have a valid value');
   }
 
   return {
-    data: swapTx.data as Hex,
-    to: swapTx.to as Address,
-    value: (swapTx.value || value)!.toString(),
+    data: txData,
+    to: targetContract,
+    value: value.toString(),
   };
 };
 
-/**
- * Function that prepares a crosschain swap quote transaction data for batching without executing it
- *
- * @param {CrosschainQuote} quote
- * @param {string} referrer
- * @returns {Promise<BatchCall>}
- */
 export const prepareFillCrosschainQuote = async (
   quote: CrosschainQuote,
   referrer?: string
@@ -862,7 +751,7 @@ export const prepareFillCrosschainQuote = async (
 
   let txData = data;
   if (referrer) {
-    txData = `${txData}${getReferrerCode(referrer)}`;
+    txData = `${txData}${getReferrerCode(referrer)}` as Hex;
   }
 
   return {

@@ -1,19 +1,13 @@
-import { BigNumberish } from '@ethersproject/bignumber';
 import type { Address } from 'ox/Address';
-import { sdkConfig } from './quotes';
-import { ChainId, Slippage, SlippageError, SlippageParams } from './types';
+import { sdkConfig } from './quotes.js';
+import {
+  BigIntish,
+  ChainId,
+  Slippage,
+  SlippageError,
+  SlippageParams,
+} from './types/index.js';
 
-/**
- * Function to get a slippage formatted quote url to use with backend
- *
- * @param {ChainId} params.chainId
- * @param {ChainId} params.toChainId
- * @param {Address} params.sellTokenAddress
- * @param {Address} params.buyTokenAddress
- * @param {BigNumberish} params.buyAmount
- * @param {BigNumberish} params.sellAmount
- * @returns {string}
- */
 const buildRainbowSlippageUrl = ({
   chainId,
   toChainId,
@@ -26,8 +20,8 @@ const buildRainbowSlippageUrl = ({
   toChainId?: number;
   sellTokenAddress: Address;
   buyTokenAddress: Address;
-  buyAmount?: BigNumberish;
-  sellAmount?: BigNumberish;
+  buyAmount?: BigIntish;
+  sellAmount?: BigIntish;
 }) => {
   const searchParams = new URLSearchParams({
     buyToken: buyTokenAddress,
@@ -41,18 +35,6 @@ const buildRainbowSlippageUrl = ({
   return `${sdkConfig.apiBaseUrl}/v1/slippage?` + searchParams.toString();
 };
 
-/**
- * Function to get slippage from rainbow's swap aggregator backend
- *
- * @param {SlippageParams} params
- * @param {ChainId} params.chainId
- * @param {ChainId} params.toChainId
- * @param {Address} params.sellTokenAddress
- * @param {Address} params.buyTokenAddress
- * @param {BigNumberish} params.sellAmount
- * @param {BigNumberish} params.buyAmount
- * @returns {Promise<Slippage | SlippageError | null>}
- */
 export const getSlippage = async (
   params: SlippageParams
 ): Promise<Slippage | SlippageError | null> => {

@@ -1,5 +1,5 @@
 import type { Address } from 'ox/Address';
-import { sanityCheckAddress } from '../../src/utils/sanity_check';
+import { sanityCheckAddress } from '../../src/utils/sanity_check.js';
 
 describe('sanityCheckAddress', () => {
   it('should not throw on valid address', () => {

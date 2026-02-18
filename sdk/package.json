@@ -1,96 +1,50 @@
 {
-  "version": "0.41.0",
   "name": "@rainbow-me/swaps",
+  "version": "0.41.0",
   "license": "GPL-3.0",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "author": "Bruno Barbieri",
   "files": [
     "dist",
     "src"
   ],
-  "engines": {
-    "node": ">=10"
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "src": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
   },
-  "packageManager": "yarn@4.2.2",
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build --ignore-pattern tests/*",
-    "test": "tsdx test --passWithNoTests",
+    "build": "zile --project tsconfig.build.json",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext js,ts,jsx,tsx",
-    "prepack": "tsdx build",
-    "size": "size-limit",
-    "analyze": "size-limit --why",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
     "changeset": "changeset",
     "release": "yarn release:verify-git && yarn build && changeset publish --tag latest && git push --follow-tags",
     "release:verify-git": "git diff --exit-code && git rev-parse --abbrev-ref HEAD | grep \"main\""
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
+  "dependencies": {
+    "ox": "0.9.14",
+    "viem": "^2.0.0"
   },
-  "prettier": {
-    "printWidth": 80,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
-  "author": "Bruno Barbieri",
-  "module": "dist/rainbow-swaps.esm.js",
-  "size-limit": [
-    {
-      "path": "dist/rainbow-swaps.cjs.production.min.js",
-      "limit": "10 KB"
-    },
-    {
-      "path": "dist/rainbow-swaps.esm.js",
-      "limit": "10 KB"
-    }
-  ],
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
-    "@size-limit/preset-small-lib": "^5.0.3",
-    "@typescript-eslint/eslint-plugin": "^4.31.2",
-    "eslint": "^7.32.0",
-    "eslint-config-rainbow": "^2.0.1",
-    "eslint-plugin-jest": "^24.4.2",
-    "husky": "^7.0.2",
-    "prettier": "^2.4.1",
-    "size-limit": "^5.0.3",
-    "tsdx": "^0.14.1",
-    "tslib": "^2.3.1",
-    "typescript": "5.5.4"
+    "oxfmt": "latest",
+    "oxlint": "latest",
+    "typescript": "5.5.4",
+    "vitest": "^3.0.0",
+    "zile": "^0.0.21"
   },
-  "dependencies": {
-    "@ethereumjs/util": "9.0.0",
-    "@ethersproject/abi": "5.7.0",
-    "@ethersproject/abstract-signer": "5.7.0",
-    "@ethersproject/bignumber": "5.7.0",
-    "@ethersproject/bytes": "5.7.0",
-    "@ethersproject/contracts": "5.7.0",
-    "@ethersproject/keccak256": "5.7.0",
-    "@ethersproject/providers": "5.7.0",
-    "@ethersproject/solidity": "5.7.0",
-    "@ethersproject/strings": "5.7.0",
-    "@ethersproject/transactions": "5.7.0",
-    "@ethersproject/wallet": "5.7.0",
-    "@metamask/eth-sig-util": "7.0.0",
-    "ox": "0.9.14"
+  "engines": {
+    "node": ">=18"
   },
-  "resolutions": {
-    "node-notifier": "8.0.1",
-    "minimist": "1.2.6",
-    "terser": "4.8.1",
-    "jsdom": "16.5.0",
-    "nanoid": "3.1.31",
-    "shelljs": "0.8.5",
-    "json-schema": "0.4.0",
-    "glob-parent": "5.1.2",
-    "ws": "7.4.6",
-    "ansi-regex": "5.0.1"
-  },
-  "jest": {
-    "testEnvironment": "node"
-  }
+  "packageManager": "yarn@4.2.2"
 }

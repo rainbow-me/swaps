@@ -1,4 +1,4 @@
-import type { Address } from "ox/Address";
+import type { Address } from 'ox/Address';
 
 /**
  * sanityCheckAddress ensures the integrity and correctness of the destination address to prevent transactions to null address

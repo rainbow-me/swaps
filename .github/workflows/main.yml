@@ -59,5 +59,13 @@ jobs:
           cache-dependency-path: sdk/yarn.lock
       - name: SDK setup
         run: yarn install --immutable
+      - name: Typecheck
+        run: yarn typecheck
+      - name: Lint
+        run: yarn lint
+      - name: Check formatting
+        run: yarn format:check
+      - name: Build
+        run: yarn build
       - name: Run tests
         run: yarn test

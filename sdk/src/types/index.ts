@@ -1,5 +1,3 @@
-import { BigNumberish } from '@ethersproject/bignumber';
-import { Contract } from '@ethersproject/contracts';
 import type { Address } from 'ox/Address';
 import type { Hex } from 'ox/Hex';
 
@@ -80,15 +78,16 @@ export type Currency =
   | 'NZD'
   | 'ZAR';
 
-// QuoteParams are the parameters required to get a quote from the Swap API
+export type BigIntish = string | number | bigint;
+
 export interface QuoteParams {
   source?: Source;
   chainId: number;
   fromAddress: Address;
   sellTokenAddress: Address;
   buyTokenAddress: Address;
-  sellAmount?: BigNumberish;
-  buyAmount?: BigNumberish;
+  sellAmount?: BigIntish;
+  buyAmount?: BigIntish;
   slippage: number;
   destReceiver?: Address;
   refuel?: boolean;
@@ -102,36 +101,34 @@ export interface ProtocolShare {
   part: number;
 }
 
-// QuoteError is returned when a swap quote failed
 export interface QuoteError {
   error: boolean;
   error_code?: number;
   message: string;
 }
 
-// Quote is the response from the Swap API
 export interface Quote {
   source?: Source;
   from: Address;
   to?: Address;
   data?: Hex;
-  value?: BigNumberish;
-  sellAmount: BigNumberish;
-  sellAmountDisplay: BigNumberish;
-  sellAmountInEth: BigNumberish;
-  sellAmountMinusFees: BigNumberish;
+  value?: BigIntish;
+  sellAmount: BigIntish;
+  sellAmountDisplay: BigIntish;
+  sellAmountInEth: BigIntish;
+  sellAmountMinusFees: BigIntish;
   sellTokenAddress: Address;
   sellTokenAsset?: TokenAsset;
   buyTokenAddress: Address;
   buyTokenAsset?: TokenAsset;
-  buyAmount: BigNumberish;
-  buyAmountDisplay: BigNumberish;
-  buyAmountDisplayMinimum: BigNumberish;
-  buyAmountInEth: BigNumberish;
-  buyAmountMinusFees: BigNumberish;
-  fee: BigNumberish;
+  buyAmount: BigIntish;
+  buyAmountDisplay: BigIntish;
+  buyAmountDisplayMinimum: BigIntish;
+  buyAmountInEth: BigIntish;
+  buyAmountMinusFees: BigIntish;
+  fee: BigIntish;
   feeTokenAsset?: TokenAsset;
-  feeInEth: BigNumberish;
+  feeInEth: BigIntish;
   feePercentageBasisPoints: number;
   protocols?: ProtocolShare[];
   inputTokenDecimals?: number;
@@ -179,7 +176,7 @@ export interface Reward {
 }
 
 interface SocketGasFees {
-  gasAmount: BigNumberish;
+  gasAmount: BigIntish;
   gasLimit: string;
   asset: SocketAsset;
   feesInUsd: number;
@@ -193,7 +190,7 @@ interface SocketProtocol {
   robustnessScore: number;
 }
 interface SocketProtocolFees {
-  amount: BigNumberish;
+  amount: BigIntish;
   asset: SocketAsset;
   feesInUsd: number;
 }
@@ -207,21 +204,21 @@ interface SocketRoute {
   };
   routeId: string;
   isOnlySwapRoute: boolean;
-  fromAmount: BigNumberish;
-  toAmount: BigNumberish;
+  fromAmount: BigIntish;
+  toAmount: BigIntish;
   usedBridgeNames: string[];
   minimumGasBalances: {
-    [chaind: string]: BigNumberish;
+    [chaind: string]: BigIntish;
   };
   totalUserTx: number;
   sender: Address;
   recipient: Address;
-  totalGasFeesInUsd: BigNumberish;
+  totalGasFeesInUsd: BigIntish;
   userTxs: {
     userTxType: string;
     txType: string;
     chainId: number;
-    toAmount: BigNumberish;
+    toAmount: BigIntish;
     toAsset: SocketAsset;
     stepCount: number;
     routePath: string;
@@ -237,11 +234,11 @@ interface SocketRoute {
       protocol: SocketProtocol;
       fromChainId: number;
       fromAsset: SocketAsset;
-      fromAmount: BigNumberish;
+      fromAmount: BigIntish;
       toChainId: number;
       toAsset: SocketAsset;
-      toAmount: BigNumberish;
-      minAmountOut: BigNumberish;
+      toAmount: BigIntish;
+      minAmountOut: BigIntish;
       bridgeSlippage: number;
       protocolFees: SocketProtocolFees;
       gasFees: SocketGasFees;
@@ -296,15 +293,14 @@ export interface SocketChainsData {
     limits: {
       chainId: ChainId;
       isEnabled: boolean;
-      minAmount: BigNumberish;
-      maxAmount: BigNumberish;
+      minAmount: BigIntish;
+      maxAmount: BigIntish;
     }[];
-    gasLimit: BigNumberish;
+    gasLimit: BigIntish;
     __v: number;
   }[];
 }
 
-// CrosschainQuote holds additional fields relevant for crosschain swaps
 export interface CrosschainQuote extends Quote {
   routes: SocketRoute[];
   refuel: SocketRefuelData | null;
@@ -315,20 +311,31 @@ export interface TransactionOptions {
   maxFeePerGas?: string;
   maxPriorityFeePerGas?: string;
   nonce?: string;
-  value?: number | BigNumberish;
+  value?: number | BigIntish;
   from?: Address;
 }
 
+export interface PermitSignature {
+  value: bigint;
+  nonce: bigint;
+  deadline: bigint;
+  isDaiStylePermit: boolean;
+  v: number;
+  r: Hex;
+  s: Hex;
+}
+
 export interface QuoteExecutionDetails {
-  method: any;
-  methodArgs: (string | number | BigNumberish | Address | undefined)[];
+  method: (...args: readonly unknown[]) => Promise<bigint>;
+  methodArgs: readonly (BigIntish | Address | Hex | undefined)[];
   params: TransactionOptions;
   methodName: string;
-  router: Contract;
+  address: Address;
+  abi: readonly unknown[];
 }
 
 export interface CrosschainQuoteExecutionDetails {
-  method: any;
+  method: Promise<bigint>;
   params: TransactionOptions;
 }
 
@@ -336,8 +343,8 @@ export interface SlippageParams {
   chainId: number;
   sellTokenAddress: Address;
   buyTokenAddress: Address;
-  sellAmount?: BigNumberish;
-  buyAmount?: BigNumberish;
+  sellAmount?: BigIntish;
+  buyAmount?: BigIntish;
   toChainId?: number;
 }
 
