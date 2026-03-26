@@ -1,0 +1,392 @@
+[
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_owner", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  { "inputs": [], "name": "FeesDrainAttempt", "type": "error" },
+  { "inputs": [], "name": "InsufficientReceivedAmount", "type": "error" },
+  { "inputs": [], "name": "InvalidFeePercentage", "type": "error" },
+  { "inputs": [], "name": "NoEthReceived", "type": "error" },
+  { "inputs": [], "name": "NoReceive", "type": "error" },
+  { "inputs": [], "name": "NoTokensReceived", "type": "error" },
+  { "inputs": [], "name": "OnlyOwner", "type": "error" },
+  { "inputs": [], "name": "ReentrancyDetected", "type": "error" },
+  { "inputs": [], "name": "ReturnExceedsApproval", "type": "error" },
+  { "inputs": [], "name": "SameOwner", "type": "error" },
+  { "inputs": [], "name": "SameTokenSwap", "type": "error" },
+  { "inputs": [], "name": "TargetNotAuthorized", "type": "error" },
+  { "inputs": [], "name": "ZeroAddress", "type": "error" },
+  { "inputs": [], "name": "ZeroSwapAmount", "type": "error" },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "EthWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes16",
+        "name": "swapId",
+        "type": "bytes16"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sellToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "buyToken",
+        "type": "address"
+      }
+    ],
+    "name": "PartialFill",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes16",
+        "name": "swapId",
+        "type": "bytes16"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sellToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "buyToken",
+        "type": "address"
+      }
+    ],
+    "name": "Settlement",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "SwapTargetAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "SwapTargetRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "TokenWithdrawn",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes16", "name": "swapId", "type": "bytes16" },
+      {
+        "internalType": "address",
+        "name": "buyTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "target",
+        "type": "address"
+      },
+      { "internalType": "bytes", "name": "swapCallData", "type": "bytes" },
+      { "internalType": "uint256", "name": "feeAmount", "type": "uint256" }
+    ],
+    "name": "fillQuoteEthToToken",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes16", "name": "swapId", "type": "bytes16" },
+      {
+        "internalType": "address",
+        "name": "sellTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "target",
+        "type": "address"
+      },
+      { "internalType": "bytes", "name": "swapCallData", "type": "bytes" },
+      { "internalType": "uint256", "name": "sellAmount", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "feePercentageBasisPoints",
+        "type": "uint256"
+      }
+    ],
+    "name": "fillQuoteTokenToEth",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes16", "name": "swapId", "type": "bytes16" },
+      {
+        "internalType": "address",
+        "name": "sellTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "target",
+        "type": "address"
+      },
+      { "internalType": "bytes", "name": "swapCallData", "type": "bytes" },
+      { "internalType": "uint256", "name": "sellAmount", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "feePercentageBasisPoints",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          { "internalType": "uint256", "name": "value", "type": "uint256" },
+          { "internalType": "uint256", "name": "nonce", "type": "uint256" },
+          { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+          {
+            "internalType": "bool",
+            "name": "isDaiStylePermit",
+            "type": "bool"
+          },
+          { "internalType": "uint8", "name": "v", "type": "uint8" },
+          { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+          { "internalType": "bytes32", "name": "s", "type": "bytes32" }
+        ],
+        "internalType": "struct PermitHelper.Permit",
+        "name": "permitData",
+        "type": "tuple"
+      }
+    ],
+    "name": "fillQuoteTokenToEthWithPermit",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes16", "name": "swapId", "type": "bytes16" },
+      {
+        "internalType": "address",
+        "name": "sellTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "buyTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "target",
+        "type": "address"
+      },
+      { "internalType": "bytes", "name": "swapCallData", "type": "bytes" },
+      { "internalType": "uint256", "name": "sellAmount", "type": "uint256" },
+      { "internalType": "uint256", "name": "feeAmount", "type": "uint256" }
+    ],
+    "name": "fillQuoteTokenToToken",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes16", "name": "swapId", "type": "bytes16" },
+      {
+        "internalType": "address",
+        "name": "sellTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "buyTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "target",
+        "type": "address"
+      },
+      { "internalType": "bytes", "name": "swapCallData", "type": "bytes" },
+      { "internalType": "uint256", "name": "sellAmount", "type": "uint256" },
+      { "internalType": "uint256", "name": "feeAmount", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint256", "name": "value", "type": "uint256" },
+          { "internalType": "uint256", "name": "nonce", "type": "uint256" },
+          { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+          {
+            "internalType": "bool",
+            "name": "isDaiStylePermit",
+            "type": "bool"
+          },
+          { "internalType": "uint8", "name": "v", "type": "uint8" },
+          { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+          { "internalType": "bytes32", "name": "s", "type": "bytes32" }
+        ],
+        "internalType": "struct PermitHelper.Permit",
+        "name": "permitData",
+        "type": "tuple"
+      }
+    ],
+    "name": "fillQuoteTokenToTokenWithPermit",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "swapTargets",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "target", "type": "address" },
+      { "internalType": "bool", "name": "add", "type": "bool" }
+    ],
+    "name": "updateSwapTargets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "withdrawEth",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "token", "type": "address" },
+      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "withdrawToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  { "stateMutability": "payable", "type": "receive" }
+]

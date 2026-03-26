@@ -145,6 +145,7 @@ export interface Quote {
   allowanceTarget: string;
   allowanceNeeded: boolean;
   fallback?: boolean;
+  routerVersion?: 'v1' | 'v2';
 }
 
 export interface TokenAsset {
