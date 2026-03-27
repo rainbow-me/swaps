@@ -1,9 +1,12 @@
+import { Interface } from '@ethersproject/abi';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
+import RainbowRouterV2ABI from './abi/RainbowRouterV2.json';
 import {
   buildRainbowQuoteUrl,
   fillQuote,
   isAllowedTargetContract,
+  prepareFillQuote,
 } from './quotes';
 import { ChainId, Quote } from './types';
 import {
@@ -13,6 +16,82 @@ import {
 } from './utils/constants';
 
 describe('Quotes', () => {
+  describe('prepareFillQuote', () => {
+    const mockWallet = Wallet.createRandom();
+
+    const uuidToBytes16 = (uuid: string) => {
+      const hex = uuid.trim().toLowerCase().replace(/-/g, '');
+      if (!/^[0-9a-f]{32}$/.test(hex)) {
+        throw new Error(`Invalid swapId UUID for bytes16: ${uuid}`);
+      }
+      return `0x${hex}`;
+    };
+
+    it('should throw for v2 quote when swapId is missing', async () => {
+      const v2QuoteMissingSwapId = {
+        buyTokenAddress: '0x0987654321098765432109876543210987654321',
+        chainId: ChainId.base,
+        data: '0x1234',
+        fallback: false,
+        fee: '1',
+        feePercentageBasisPoints: 0,
+        from: '0x1111111111111111111111111111111111111111',
+        routerVersion: 'v2',
+        sellAmount: '100',
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        to: RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
+        value: '1',
+      } as unknown as Quote;
+
+      await expect(
+        prepareFillQuote(
+          v2QuoteMissingSwapId,
+          {},
+          mockWallet,
+          false,
+          ChainId.base
+        )
+      ).rejects.toThrow('swapId (UUID string) is required for routerVersion=v2 quotes');
+    });
+
+    it('should prepare v2 calldata with bytes16 swapId in first position', async () => {
+      const swapId = '550e8400-e29b-41d4-a716-446655440000';
+      const quote = {
+        buyTokenAddress: '0x0987654321098765432109876543210987654321',
+        chainId: ChainId.base,
+        data: '0x1234',
+        fallback: false,
+        fee: '1',
+        feePercentageBasisPoints: 0,
+        from: '0x1111111111111111111111111111111111111111',
+        routerVersion: 'v2',
+        sellAmount: '100',
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        swapId,
+        to: RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
+        value: '1',
+      } as unknown as Quote;
+
+      const prepared = await prepareFillQuote(quote, {}, mockWallet, false, ChainId.base);
+      const iface = new Interface(RainbowRouterV2ABI as any);
+      const expectedData = iface.encodeFunctionData('fillQuoteTokenToToken', [
+        uuidToBytes16(swapId),
+        quote.sellTokenAddress,
+        quote.buyTokenAddress,
+        quote.to,
+        quote.data,
+        quote.sellAmount,
+        quote.fee,
+      ]);
+
+      expect(prepared.to.toLowerCase()).toBe(
+        RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE.toLowerCase()
+      );
+      expect(prepared.data).toBe(expectedData);
+      expect(prepared.data.slice(0, 10)).toBe(expectedData.slice(0, 10));
+    });
+  });
+
   describe('fillQuote', () => {
     const mockWallet = Wallet.createRandom();
     const provider = new StaticJsonRpcProvider('https://eth.llamarpc.com');

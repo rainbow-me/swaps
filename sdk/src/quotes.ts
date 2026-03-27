@@ -42,12 +42,13 @@ import { getReferrerCode } from './utils/referrer';
 import { sanityCheckAddress } from './utils/sanity_check';
 
 const uuidToBytes16 = (uuid: string): Hex => {
-  const hex = uuid.trim().toLowerCase().replace(/-/g, '');
+  const normalizedUuid = uuid.trim().toLowerCase();
+  const hex = normalizedUuid.replace(/-/g, '');
   if (!/^[0-9a-f]{32}$/.test(hex)) {
     throw new Error(`Invalid swapId UUID for bytes16: ${uuid}`);
   }
 
-  return `0x${hex}` as Hex;
+  return `0x${hex}` as `0x${string}`;
 };
 
 /**
@@ -642,7 +643,7 @@ export const getQuoteExecutionDetails = (
   } = quote;
 
   if (isRouterV2 && !swapId)
-    throw new Error('swapId (valid UUID string) is required for routerVersion=v2 quotes');
+    throw new Error('swapId (UUID string) is required for routerVersion=v2 quotes');
 
   const swapIdBytes16 = isRouterV2 ? uuidToBytes16(swapId!) : undefined;
 
