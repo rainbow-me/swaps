@@ -543,9 +543,12 @@ export const isAllowedTargetContract = (
  * @returns {Address}
  */
 export const getTargetAddress = (quote: Quote) => {
-  if (quote.fallback) {
+  // TODO: Router v2 quotes don't currently support fallback routing. 
+  // Remove this once router v2 supports fallback routing.
+  if (quote.routerVersion !== 'v2' && quote.fallback) {
     return quote.to;
   }
+
   return getRainbowRouterContractAddress(quote.chainId, quote.routerVersion ?? 'v1');
 };
 
@@ -753,6 +756,10 @@ export const prepareFillQuote = async (
   chainId: ChainId,
   referrer?: string
 ): Promise<BatchCall> => {
+  const routerVersion = quote.routerVersion ?? 'v1';
+  const isRouterV2 = routerVersion === 'v2';
+  const isFallback = !isRouterV2 && Boolean(quote.fallback);
+
   let targetContract: Address | undefined;
   try {
     targetContract = getTargetAddress(quote);
@@ -760,7 +767,6 @@ export const prepareFillQuote = async (
     throw new Error('Target contract unauthorized');
   }
 
-  const routerVersion = quote.routerVersion ?? 'v1';
   if (
     !targetContract ||
     !isAllowedTargetContract(targetContract, chainId, routerVersion)
@@ -768,12 +774,11 @@ export const prepareFillQuote = async (
     throw new Error('Target contract unauthorized');
   }
 
-  const isRouterV2 = routerVersion === 'v2';
   if (isRouterV2 && !quote.swapId)
     throw new Error('swapId (UUID string) is required for routerVersion=v2 quotes');
   const swapIdBytes16 = isRouterV2 ? uuidToBytes16(quote.swapId!) : undefined;
 
-  const ABI = quote.fallback
+  const ABI = isFallback
     ? SwapRouter02ABI
     : isRouterV2
       ? RainbowRouterV2ABI
@@ -792,7 +797,7 @@ export const prepareFillQuote = async (
     feePercentageBasisPoints,
   } = quote;
 
-  if (!quote.fallback) {
+  if (!isFallback) {
     const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
 
     if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {

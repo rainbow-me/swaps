@@ -90,6 +90,42 @@ describe('Quotes', () => {
       expect(prepared.data).toBe(expectedData);
       expect(prepared.data.slice(0, 10)).toBe(expectedData.slice(0, 10));
     });
+
+    it('should ignore fallback=true for v2 quotes', async () => {
+      const swapId = '550e8400-e29b-41d4-a716-446655440000';
+      const quote = {
+        buyTokenAddress: '0x0987654321098765432109876543210987654321',
+        chainId: ChainId.base,
+        data: '0x1234',
+        fallback: true,
+        fee: '1',
+        feePercentageBasisPoints: 0,
+        from: '0x1111111111111111111111111111111111111111',
+        routerVersion: 'v2',
+        sellAmount: '100',
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        swapId,
+        to: RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
+        value: '1',
+      } as unknown as Quote;
+
+      const prepared = await prepareFillQuote(quote, {}, mockWallet, false, ChainId.base);
+      const iface = new Interface(RainbowRouterV2ABI as any);
+      const expectedData = iface.encodeFunctionData('fillQuoteTokenToToken', [
+        uuidToBytes16(swapId),
+        quote.sellTokenAddress,
+        quote.buyTokenAddress,
+        quote.to,
+        quote.data,
+        quote.sellAmount,
+        quote.fee,
+      ]);
+
+      expect(prepared.to.toLowerCase()).toBe(
+        RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE.toLowerCase()
+      );
+      expect(prepared.data).toBe(expectedData);
+    });
   });
 
   describe('fillQuote', () => {
