@@ -753,7 +753,13 @@ export const prepareFillQuote = async (
   chainId: ChainId,
   referrer?: string
 ): Promise<BatchCall> => {
-  const targetContract = getTargetAddress(quote);
+  let targetContract: Address | undefined;
+  try {
+    targetContract = getTargetAddress(quote);
+  } catch (_error) {
+    throw new Error('Target contract unauthorized');
+  }
+
   const routerVersion = quote.routerVersion ?? 'v1';
   if (
     !targetContract ||
