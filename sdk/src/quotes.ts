@@ -7,6 +7,7 @@ import { Wallet } from '@ethersproject/wallet';
 import type { Address } from 'ox/Address';
 import type { Hex } from 'ox/Hex';
 import RainbowRouterABI from './abi/RainbowRouter.json';
+import RainbowRouterV2ABI from './abi/RainbowRouterV2.json';
 import SwapRouter02ABI from './abi/SwapRouter02.json';
 import {
   ChainId,
@@ -33,10 +34,21 @@ import {
   RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
+  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
+  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
 import { sanityCheckAddress } from './utils/sanity_check';
+
+const uuidToBytes16 = (uuid: string): Hex => {
+  const hex = uuid.trim().toLowerCase().replace(/-/g, '');
+  if (!/^[0-9a-f]{32}$/.test(hex)) {
+    throw new Error(`Invalid swapId UUID for bytes16: ${uuid}`);
+  }
+
+  return `0x${hex}` as Hex;
+};
 
 /**
  * Configure SDK for mocking or fallback to API_BASE_URL
@@ -54,21 +66,44 @@ export function configureSDK(options: { apiBaseUrl?: string }) {
  * Function to get the rainbow router contract address based on the chainId
  *
  * @param {ChainId} chainId
+ * @param {'v1' | 'v2'} routerVersion
  * @returns {Address}
  */
-export const getRainbowRouterContractAddress = (chainId: ChainId): Address => {
-  if (chainId === ChainId.zora) {
-    return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
-  } else if (chainId === ChainId.unichain) {
-    return RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN;
-  } else if (chainId === ChainId.zksyncera) {
-    return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC;
-  } else if (chainId === ChainId.abstract) {
-    return RAINBOW_ROUTER_CONTRACT_ADDRESS_ABSTRACT;
-  } else if (chainId === ChainId.gnosis) {
-    return RAINBOW_ROUTER_CONTRACT_ADDRESS_GNOSIS;
+export const getRainbowRouterContractAddressV2 = (chainId: ChainId): Address => {
+  switch (chainId) {
+    case ChainId.mainnet:
+      return RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET;
+    case ChainId.base:
+      return RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE;
+    default:
+      throw new Error(`Unsupported chainId for routerVersion=v2: ${chainId}`);
   }
-  return RAINBOW_ROUTER_CONTRACT_ADDRESS;
+};
+
+export const getRainbowRouterContractAddressV1 = (chainId: ChainId): Address => {
+  switch (chainId) {
+    case ChainId.zora:
+      return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
+    case ChainId.unichain:
+      return RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN;
+    case ChainId.zksyncera:
+      return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC;
+    case ChainId.abstract:
+      return RAINBOW_ROUTER_CONTRACT_ADDRESS_ABSTRACT;
+    case ChainId.gnosis:
+      return RAINBOW_ROUTER_CONTRACT_ADDRESS_GNOSIS;
+    default:
+      return RAINBOW_ROUTER_CONTRACT_ADDRESS;
+  }
+};
+
+export const getRainbowRouterContractAddress = (
+  chainId: ChainId,
+  routerVersion: 'v1' | 'v2' = 'v1'
+): Address => {
+  return routerVersion === 'v2'
+    ? getRainbowRouterContractAddressV2(chainId)
+    : getRainbowRouterContractAddressV1(chainId);
 };
 
 /**
@@ -472,15 +507,32 @@ const calculateDeadline = async (wallet: Wallet) => {
  */
 export const isAllowedTargetContract = (
   targetContract: Address,
-  chainId: ChainId
+  chainId: ChainId,
+  routerVersion: 'v1' | 'v2' = 'v1'
 ) => {
-  const rainbowRouterContractAddress =
-    getRainbowRouterContractAddress(chainId) ?? '';
-  const ammContractAddress = getAmmContractAddress(chainId) ?? '';
-  return [
-    rainbowRouterContractAddress.toLowerCase(),
-    ammContractAddress.toLowerCase(),
-  ].includes(targetContract.toLowerCase());
+  const targetContractLowerCase = targetContract.toLowerCase();
+
+  try {
+    const routerContractAddress = getRainbowRouterContractAddress(
+      chainId,
+      routerVersion
+    );
+    if (routerContractAddress.toLowerCase() === targetContractLowerCase) {
+      return true;
+    }
+  } catch (_error) {
+    // Unsupported router version/chain combination; treat as not allowed.
+    return false;
+  }
+
+  if (routerVersion === 'v1') {
+    const ammContractAddress = getAmmContractAddress(chainId) ?? '';
+    if (ammContractAddress.toLowerCase() === targetContractLowerCase) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 /**
@@ -493,7 +545,7 @@ export const getTargetAddress = (quote: Quote) => {
   if (quote.fallback) {
     return quote.to;
   }
-  return getRainbowRouterContractAddress(quote.chainId);
+  return getRainbowRouterContractAddress(quote.chainId, quote.routerVersion ?? 'v1');
 };
 
 /**
@@ -570,9 +622,10 @@ export const getQuoteExecutionDetails = (
   transactionOptions: TransactionOptions,
   provider: StaticJsonRpcProvider
 ): QuoteExecutionDetails => {
+  const isRouterV2 = quote.routerVersion === 'v2';
   const instance = new Contract(
-    getRainbowRouterContractAddress(quote.chainId),
-    RainbowRouterABI,
+    getRainbowRouterContractAddress(quote.chainId, quote.routerVersion ?? 'v1'),
+    isRouterV2 ? RainbowRouterV2ABI : RainbowRouterABI,
     provider
   );
 
@@ -585,14 +638,22 @@ export const getQuoteExecutionDetails = (
     value,
     sellAmount,
     feePercentageBasisPoints,
+    swapId,
   } = quote;
+
+  if (isRouterV2 && !swapId)
+    throw new Error('swapId (valid UUID string) is required for routerVersion=v2 quotes');
+
+  const swapIdBytes16 = isRouterV2 ? uuidToBytes16(swapId!) : undefined;
 
   const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
 
   if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
     return {
       method: instance.estimateGas['fillQuoteEthToToken'],
-      methodArgs: [buyTokenAddress, to, data, fee],
+      methodArgs: isRouterV2
+        ? [swapIdBytes16, buyTokenAddress, to, data, fee]
+        : [buyTokenAddress, to, data, fee],
       methodName: 'fillQuoteEthToToken',
       params: {
         ...transactionOptions,
@@ -604,6 +665,7 @@ export const getQuoteExecutionDetails = (
     return {
       method: instance.estimateGas['fillQuoteTokenToEth'],
       methodArgs: [
+        ...(isRouterV2 ? [swapIdBytes16] : []),
         sellTokenAddress,
         to,
         data,
@@ -621,6 +683,7 @@ export const getQuoteExecutionDetails = (
     return {
       method: instance.estimateGas['fillQuoteTokenToToken'],
       methodArgs: [
+        ...(isRouterV2 ? [swapIdBytes16] : []),
         sellTokenAddress,
         buyTokenAddress,
         to,
@@ -690,11 +753,24 @@ export const prepareFillQuote = async (
   referrer?: string
 ): Promise<BatchCall> => {
   const targetContract = getTargetAddress(quote);
-  if (!targetContract || !isAllowedTargetContract(targetContract, chainId)) {
+  const routerVersion = quote.routerVersion ?? 'v1';
+  if (
+    !targetContract ||
+    !isAllowedTargetContract(targetContract, chainId, routerVersion)
+  ) {
     throw new Error('Target contract unauthorized');
   }
 
-  const ABI = quote.fallback ? SwapRouter02ABI : RainbowRouterABI;
+  const isRouterV2 = routerVersion === 'v2';
+  if (isRouterV2 && !quote.swapId)
+    throw new Error('swapId (UUID string) is required for routerVersion=v2 quotes');
+  const swapIdBytes16 = isRouterV2 ? uuidToBytes16(quote.swapId!) : undefined;
+
+  const ABI = quote.fallback
+    ? SwapRouter02ABI
+    : isRouterV2
+      ? RainbowRouterV2ABI
+      : RainbowRouterABI;
   const instance = new Contract(targetContract, ABI, wallet);
   let swapTx: PopulatedTransaction;
 
@@ -714,6 +790,7 @@ export const prepareFillQuote = async (
 
     if (sellTokenAddress?.toLowerCase() === ethAddressLowerCase) {
       swapTx = await instance.populateTransaction.fillQuoteEthToToken(
+        ...(isRouterV2 ? [swapIdBytes16] : []),
         buyTokenAddress,
         to,
         data,
@@ -737,6 +814,7 @@ export const prepareFillQuote = async (
         );
         swapTx =
           await instance.populateTransaction.fillQuoteTokenToEthWithPermit(
+            ...(isRouterV2 ? [swapIdBytes16] : []),
             sellTokenAddress,
             to,
             data,
@@ -750,6 +828,7 @@ export const prepareFillQuote = async (
           );
       } else {
         swapTx = await instance.populateTransaction.fillQuoteTokenToEth(
+          ...(isRouterV2 ? [swapIdBytes16] : []),
           sellTokenAddress,
           to,
           data,
@@ -775,6 +854,7 @@ export const prepareFillQuote = async (
         );
         swapTx =
           await instance.populateTransaction.fillQuoteTokenToTokenWithPermit(
+            ...(isRouterV2 ? [swapIdBytes16] : []),
             sellTokenAddress,
             buyTokenAddress,
             to,
@@ -789,6 +869,7 @@ export const prepareFillQuote = async (
           );
       } else {
         swapTx = await instance.populateTransaction.fillQuoteTokenToToken(
+          ...(isRouterV2 ? [swapIdBytes16] : []),
           sellTokenAddress,
           buyTokenAddress,
           to,

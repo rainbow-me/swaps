@@ -146,6 +146,7 @@ export interface Quote {
   allowanceNeeded: boolean;
   fallback?: boolean;
   routerVersion?: 'v1' | 'v2';
+  swapId?: string;
 }
 
 export interface TokenAsset {

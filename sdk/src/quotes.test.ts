@@ -9,6 +9,7 @@ import { ChainId, Quote } from './types';
 import {
   AMM_CONTRACT_ADDRESSES,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
+  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
 } from './utils/constants';
 
 describe('Quotes', () => {
@@ -31,6 +32,28 @@ describe('Quotes', () => {
         error = e as Error;
       }
       expect(error?.message).toMatch('Target contract unauthorized');
+    });
+
+    it('should throw for v2 quote with invalid swapId UUID', async () => {
+      const invalidV2Quote = {
+        buyTokenAddress: '0x0987654321098765432109876543210987654321',
+        chainId: ChainId.base,
+        data: '0x1234',
+        fallback: false,
+        fee: '1',
+        feePercentageBasisPoints: 0,
+        from: '0x1111111111111111111111111111111111111111',
+        routerVersion: 'v2',
+        sellAmount: '100',
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        swapId: 'not-a-uuid',
+        to: RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
+        value: '1',
+      } as unknown as Quote;
+
+      await expect(
+        fillQuote(invalidV2Quote, {}, mockWallet, false, ChainId.base)
+      ).rejects.toThrow('Invalid swapId UUID for bytes16');
     });
   });
 
@@ -69,6 +92,15 @@ describe('Quotes', () => {
         ChainId.mainnet
       );
       expect(result).toEqual(false);
+    });
+
+    it('should allow v2 base router address for v2 quotes', () => {
+      const result = isAllowedTargetContract(
+        RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
+        ChainId.base,
+        'v2'
+      );
+      expect(result).toEqual(true);
     });
   });
 
