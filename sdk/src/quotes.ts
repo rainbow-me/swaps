@@ -368,12 +368,14 @@ export const getQuote = async (
     slippage,
     feePercentageBasisPoints,
     currency,
-    routerVersion,
   } = params;
 
   if (isNaN(Number(sellAmount)) && isNaN(Number(buyAmount))) {
     return null;
   }
+
+  const v2Supported = getRainbowRouterV2ContractAddressForChain(chainId) !== undefined;
+  const routerVersion = v2Supported && !destReceiver ? 'v2' : 'v1';
 
   const url = buildRainbowQuoteUrl({
     buyAmount,

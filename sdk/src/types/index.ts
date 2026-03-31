@@ -93,9 +93,6 @@ export interface QuoteParams {
   destReceiver?: Address;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
-  // Preferred router version for quote requests; however, the backend may
-  // still return a v1 quote even when v2 is requested.
-  routerVersion?: 'v1' | 'v2';
   toChainId?: number;
   currency: Currency;
 }
