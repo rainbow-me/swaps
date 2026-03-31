@@ -77,7 +77,6 @@ export function configureSDK(options: { apiBaseUrl?: string }) {
  * Function to get the rainbow router contract address based on the chainId
  *
  * @param {ChainId} chainId
- * @param {'v1' | 'v2'} routerVersion
  * @returns {Address}
  */
 export const getRainbowRouterContractAddressV2 = (chainId: ChainId): Address => {
