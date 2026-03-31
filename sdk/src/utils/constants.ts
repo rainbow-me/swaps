@@ -5,15 +5,8 @@ export const ETH_ADDRESS: Address = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 export const API_BASE_URL = 'https://swap.p.rainbow.me';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS: Address =
   '0x00000000009726632680fb29d3f7a9734e3010e2';
-
-export const RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET: Address =
-  '0x000000001d4c071f793de7c9c07b31ef194a2f6a';
-export const RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE: Address =
-  '0x000000001d4c071f793de7c9c07b31ef194a2f6a';
-
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA: Address =
   '0xa61550e9ddd2797e16489db09343162be98d9483';
-
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN: Address =
   '0x2a0332e28913a06fa924d40a3e2160f763010417';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ABSTRACT: Address =
@@ -22,6 +15,27 @@ export const RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC: Address =
   '0x10b65E60ae95B2bD68BfCaE31E1100369Bd01818';
 export const RAINBOW_ROUTER_CONTRACT_ADDRESS_GNOSIS: Address =
   '0x9188e9b4dabaa1ff4e75092404c223bf69cab9b7';
+
+export const RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_DEFAULT: Address =
+  '0x000000001d4c071f793de7c9c07b31ef194a2f6a';
+export const RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET: Address =
+  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_DEFAULT;
+export const RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE: Address =
+  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_DEFAULT;
+
+const RAINBOW_ROUTER_V2_CONTRACT_ADDRESSES = [
+  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_DEFAULT,
+].map((address) => address.toLowerCase());
+
+export const isRainbowRouterV2ContractAddress = (
+  contractAddress: Address
+): boolean => {
+  return RAINBOW_ROUTER_V2_CONTRACT_ADDRESSES.includes(
+    contractAddress.toLowerCase()
+  );
+};
+
+
 
 export type MultiChainAsset = {
   [key: string]: Address;

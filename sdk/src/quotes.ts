@@ -143,6 +143,7 @@ export const buildRainbowQuoteUrl = ({
   feePercentageBasisPoints,
   slippage,
   currency,
+  routerVersion,
 }: {
   chainId: number;
   destReceiver?: Address;
@@ -156,6 +157,7 @@ export const buildRainbowQuoteUrl = ({
   source?: Source;
   slippage: number;
   currency: Currency;
+  routerVersion?: 'v1' | 'v2';
 }) => {
   const searchParams = new URLSearchParams({
     allowFallback: String(true),
@@ -167,6 +169,7 @@ export const buildRainbowQuoteUrl = ({
     sellToken: sellTokenAddress,
     slippage: String(slippage),
     ...(source ? { source } : {}),
+    ...(routerVersion !== undefined ? { routerVersion } : {}),
     ...(sellAmount
       ? { sellAmount: String(sellAmount) }
       : { buyAmount: String(buyAmount) }),
@@ -347,6 +350,7 @@ export const getQuote = async (
     slippage,
     feePercentageBasisPoints,
     currency,
+    routerVersion,
   } = params;
 
   if (isNaN(Number(sellAmount)) && isNaN(Number(buyAmount))) {
@@ -365,6 +369,7 @@ export const getQuote = async (
     sellTokenAddress,
     slippage,
     source,
+    routerVersion,
   });
 
   const response = await fetch(url, { signal: abortSignal });

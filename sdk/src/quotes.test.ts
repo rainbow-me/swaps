@@ -13,6 +13,7 @@ import {
   AMM_CONTRACT_ADDRESSES,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
   RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
+  isRainbowRouterV2ContractAddress,
 } from './utils/constants';
 
 describe('Quotes', () => {
@@ -219,6 +220,24 @@ describe('Quotes', () => {
     });
   });
 
+  describe('isRainbowRouterV2ContractAddress', () => {
+    it('should match v2 contract address case-insensitively', () => {
+      const uppercaseAddress = RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE.toUpperCase() as `0x${string}`;
+      expect(isRainbowRouterV2ContractAddress(uppercaseAddress)).toEqual(true);
+      expect(
+        isRainbowRouterV2ContractAddress(
+          RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE.toLowerCase() as `0x${string}`
+        )
+      ).toEqual(true);
+    });
+
+    it('should return false for non-v2 contract address', () => {
+      expect(
+        isRainbowRouterV2ContractAddress(RAINBOW_ROUTER_CONTRACT_ADDRESS)
+      ).toEqual(false);
+    });
+  });
+
   describe('buildRainbowQuoteUrl', () => {
     it('should include allowFallback=true in URL params', () => {
       const url = buildRainbowQuoteUrl({
@@ -233,5 +252,19 @@ describe('Quotes', () => {
       expect(url).toContain('allowFallback=true');
       expect(url).toContain('enableNewChainSwaps=true');
     });
+
+    it('should not include routerVersion when routerVersion is undefined', () => {
+      const url = buildRainbowQuoteUrl({
+        buyTokenAddress: '0x0987654321098765432109876543210987654321',
+        chainId: ChainId.mainnet,
+        currency: 'USD',
+        fromAddress: '0x1111111111111111111111111111111111111111',
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        slippage: 0.5,
+      });
+
+      expect(url).not.toContain('routerVersion=');
+    });
+
   });
 });

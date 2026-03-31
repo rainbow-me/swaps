@@ -93,6 +93,9 @@ export interface QuoteParams {
   destReceiver?: Address;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
+  // Preferred router version for quote requests; however, the backend may
+  // still return a v1 quote even when v2 is requested.
+  routerVersion?: 'v1' | 'v2';
   toChainId?: number;
   currency: Currency;
 }
@@ -109,7 +112,7 @@ export interface QuoteError {
   message: string;
 }
 
-// Quote is the response from the Swap API
+// Quote is the response from the Swap API.
 export interface Quote {
   source?: Source;
   from: Address;
@@ -146,6 +149,7 @@ export interface Quote {
   allowanceNeeded: boolean;
   fallback?: boolean;
   routerVersion?: 'v1' | 'v2';
+  // swap id is required for v2 quotes.
   swapId?: string;
 }
 
