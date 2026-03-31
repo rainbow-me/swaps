@@ -73,7 +73,6 @@ export function configureSDK(options: { apiBaseUrl?: string }) {
   sdkConfig = { ...sdkConfig, ...options };
 }
 
-
 /**
  * Function to get the rainbow v1 router contract address based on the chainId
  *
@@ -115,12 +114,12 @@ const getRainbowRouterContractAddressV2 = (chainId: ChainId): Address => {
 };
 
 /**
- * Function to get the rainbow router contract address based on the chainId and router version
- *
- * @param {ChainId} chainId
- * @param {string} routerVersion
- * @returns {Address}
- */
+- * Function to get the rainbow router contract address based on the chainId and router version
+- *
+- * @param {ChainId} chainId
+- * @param {string} routerVersion
+- * @returns {Address}
+- */
 export const getRainbowRouterContractAddress = (
   chainId: ChainId,
   routerVersion: 'v1' | 'v2' = 'v1'
@@ -573,7 +572,7 @@ export const isAllowedTargetContract = (
 export const getTargetAddress = (quote: Quote) => {
   // TODO: Router v2 quotes don't currently support fallback routing. 
   // Remove this once router v2 supports fallback routing.
-  if (quote.routerVersion !== 'v2' && quote.fallback) {
+  if (quote.fallback && quote.routerVersion !== 'v2') {
     return quote.to;
   }
 
