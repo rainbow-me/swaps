@@ -23,19 +23,25 @@ export const RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET: Address =
 export const RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE: Address =
   RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_DEFAULT;
 
-const RAINBOW_ROUTER_V2_CONTRACT_ADDRESSES = [
-  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_DEFAULT,
-].map((address) => address.toLowerCase());
-
-export const isRainbowRouterV2ContractAddress = (
-  contractAddress: Address
-): boolean => {
-  return RAINBOW_ROUTER_V2_CONTRACT_ADDRESSES.includes(
-    contractAddress.toLowerCase()
-  );
+const RAINBOW_ROUTER_V2_CONTRACT_ADDRESSES_BY_CHAIN: Partial<
+  Record<ChainId, Address>
+> = {
+  [ChainId.mainnet]: RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET,
+  [ChainId.base]: RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
 };
 
+export const getRainbowRouterV2ContractAddressForChain = (
+  chainId: ChainId
+): Address | undefined => {
+  return RAINBOW_ROUTER_V2_CONTRACT_ADDRESSES_BY_CHAIN[chainId];
+};
 
+/**
+ * Returns whether a chain currently supports Rainbow Router v2.
+ * Use this to guard v2 requests/flows before selecting routerVersion='v2'.
+ */
+export const isRainbowRouterV2SupportedChain = (chainId: ChainId): boolean =>
+  getRainbowRouterV2ContractAddressForChain(chainId) !== undefined;
 
 export type MultiChainAsset = {
   [key: string]: Address;

@@ -34,8 +34,7 @@ import {
   RAINBOW_ROUTER_CONTRACT_ADDRESS_UNICHAIN,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZKSYNC,
   RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA,
-  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
-  RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET,
+  getRainbowRouterV2ContractAddressForChain,
 } from './utils/constants';
 import { signPermit } from './utils/permit';
 import { getReferrerCode } from './utils/referrer';
@@ -103,14 +102,11 @@ const getRainbowRouterContractAddressV1 = (chainId: ChainId): Address => {
  * @returns {Address}
  */
 const getRainbowRouterContractAddressV2 = (chainId: ChainId): Address => {
-  switch (chainId) {
-    case ChainId.mainnet:
-      return RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET;
-    case ChainId.base:
-      return RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE;
-    default:
-      throw new Error(`Unsupported chainId for routerVersion=v2: ${chainId}`);
+  const routerV2Address = getRainbowRouterV2ContractAddressForChain(chainId);
+  if (!routerV2Address) {
+    throw new Error(`Unsupported chainId for routerVersion=v2: ${chainId}`);
   }
+  return routerV2Address;
 };
 
 /**
