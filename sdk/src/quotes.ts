@@ -73,24 +73,14 @@ export function configureSDK(options: { apiBaseUrl?: string }) {
   sdkConfig = { ...sdkConfig, ...options };
 }
 
+
 /**
- * Function to get the rainbow router contract address based on the chainId
+ * Function to get the rainbow v1 router contract address based on the chainId
  *
  * @param {ChainId} chainId
  * @returns {Address}
  */
-export const getRainbowRouterContractAddressV2 = (chainId: ChainId): Address => {
-  switch (chainId) {
-    case ChainId.mainnet:
-      return RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET;
-    case ChainId.base:
-      return RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE;
-    default:
-      throw new Error(`Unsupported chainId for routerVersion=v2: ${chainId}`);
-  }
-};
-
-export const getRainbowRouterContractAddressV1 = (chainId: ChainId): Address => {
+const getRainbowRouterContractAddressV1 = (chainId: ChainId): Address => {
   switch (chainId) {
     case ChainId.zora:
       return RAINBOW_ROUTER_CONTRACT_ADDRESS_ZORA;
@@ -107,6 +97,30 @@ export const getRainbowRouterContractAddressV1 = (chainId: ChainId): Address => 
   }
 };
 
+/**
+ * Function to get the rainbow v2 router contract address based on the chainId
+ *
+ * @param {ChainId} chainId
+ * @returns {Address}
+ */
+const getRainbowRouterContractAddressV2 = (chainId: ChainId): Address => {
+  switch (chainId) {
+    case ChainId.mainnet:
+      return RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_MAINNET;
+    case ChainId.base:
+      return RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE;
+    default:
+      throw new Error(`Unsupported chainId for routerVersion=v2: ${chainId}`);
+  }
+};
+
+/**
+ * Function to get the rainbow router contract address based on the chainId and router version
+ *
+ * @param {ChainId} chainId
+ * @param {string} routerVersion
+ * @returns {Address}
+ */
 export const getRainbowRouterContractAddress = (
   chainId: ChainId,
   routerVersion: 'v1' | 'v2' = 'v1'
