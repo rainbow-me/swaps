@@ -51,6 +51,16 @@ const uuidToBytes16 = (uuid: string): Hex => {
   return `0x${hex}` as `0x${string}`;
 };
 
+const getSwapIdBytes16OrThrow = (quote: Quote): Hex | undefined => {
+  if (quote.routerVersion !== 'v2') {
+    return undefined;
+  }
+  if (!quote.swapId) {
+    throw new Error('swapId (UUID string) is required for routerVersion=v2 quotes');
+  }
+  return uuidToBytes16(quote.swapId);
+};
+
 /**
  * Configure SDK for mocking or fallback to API_BASE_URL
  *
@@ -647,13 +657,9 @@ export const getQuoteExecutionDetails = (
     value,
     sellAmount,
     feePercentageBasisPoints,
-    swapId,
   } = quote;
 
-  if (isRouterV2 && !swapId)
-    throw new Error('swapId (UUID string) is required for routerVersion=v2 quotes');
-
-  const swapIdBytes16 = isRouterV2 ? uuidToBytes16(swapId!) : undefined;
+  const swapIdBytes16 = getSwapIdBytes16OrThrow(quote);
 
   const ethAddressLowerCase = ETH_ADDRESS.toLowerCase();
 
@@ -779,9 +785,7 @@ export const prepareFillQuote = async (
     throw new Error('Target contract unauthorized');
   }
 
-  if (isRouterV2 && !quote.swapId)
-    throw new Error('swapId (UUID string) is required for routerVersion=v2 quotes');
-  const swapIdBytes16 = isRouterV2 ? uuidToBytes16(quote.swapId!) : undefined;
+  const swapIdBytes16 = getSwapIdBytes16OrThrow(quote);
 
   const ABI = isFallback
     ? SwapRouter02ABI

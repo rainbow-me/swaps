@@ -57,6 +57,7 @@ describe('Quotes', () => {
 
     it('should prepare v2 calldata with bytes16 swapId in first position', async () => {
       const swapId = '550e8400-e29b-41d4-a716-446655440000';
+      const swapTargetAddress = '0x2222222222222222222222222222222222222222';
       const quote = {
         buyTokenAddress: '0x0987654321098765432109876543210987654321',
         chainId: ChainId.base,
@@ -69,7 +70,7 @@ describe('Quotes', () => {
         sellAmount: '100',
         sellTokenAddress: '0x1234567890123456789012345678901234567890',
         swapId,
-        to: RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE,
+        to: swapTargetAddress,
         value: '1',
       } as unknown as Quote;
 
@@ -79,16 +80,21 @@ describe('Quotes', () => {
         uuidToBytes16(swapId),
         quote.sellTokenAddress,
         quote.buyTokenAddress,
-        quote.to,
+        swapTargetAddress,
         quote.data,
         quote.sellAmount,
         quote.fee,
       ]);
+      const decodedArgs = iface.decodeFunctionData(
+        'fillQuoteTokenToToken',
+        prepared.data
+      );
 
       expect(prepared.to.toLowerCase()).toBe(
         RAINBOW_ROUTER_V2_CONTRACT_ADDRESS_BASE.toLowerCase()
       );
       expect(prepared.data).toBe(expectedData);
+      expect(decodedArgs[3].toLowerCase()).toBe(swapTargetAddress.toLowerCase());
       expect(prepared.data.slice(0, 10)).toBe(expectedData.slice(0, 10));
     });
 
