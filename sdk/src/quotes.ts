@@ -50,6 +50,9 @@ const uuidToBytes16 = (uuid: string): Hex => {
   return `0x${hex}` as `0x${string}`;
 };
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 const getSwapIdBytes16OrThrow = (quote: Quote): Hex | undefined => {
   if (quote.routerVersion !== 'v2') {
     return undefined;
@@ -360,6 +363,7 @@ export const getQuote = async (
     source,
     chainId = ChainId.mainnet,
     destReceiver,
+    swapSessionId,
     fromAddress,
     sellTokenAddress,
     buyTokenAddress,
@@ -372,6 +376,9 @@ export const getQuote = async (
 
   if (isNaN(Number(sellAmount)) && isNaN(Number(buyAmount))) {
     return null;
+  }
+  if (swapSessionId && !UUID_REGEX.test(swapSessionId)) {
+    throw new Error('swapSessionId must be a valid UUID');
   }
 
   const v2Supported = getRainbowRouterV2ContractAddressForChain(chainId) !== undefined;
@@ -392,7 +399,12 @@ export const getQuote = async (
     routerVersion,
   });
 
-  const response = await fetch(url, { signal: abortSignal });
+  const response = await fetch(url, {
+    ...(swapSessionId
+      ? { headers: { 'X-Swap-Session-Id': swapSessionId } }
+      : {}),
+    signal: abortSignal,
+  });
   const quote = await response.json();
   if (quote.error) {
     return quote as QuoteError;

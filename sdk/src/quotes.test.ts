@@ -5,6 +5,7 @@ import RainbowRouterV2ABI from './abi/RainbowRouterV2.json';
 import {
   buildRainbowQuoteUrl,
   fillQuote,
+  getQuote,
   getQuoteExecutionDetails,
   isAllowedTargetContract,
   prepareFillQuote,
@@ -290,5 +291,48 @@ describe('Quotes', () => {
       expect(url).not.toContain('routerVersion=');
     });
 
+  });
+
+  describe('getQuote', () => {
+    it('should throw when swapSessionId is not a valid UUID', async () => {
+      await expect(
+        getQuote({
+          buyTokenAddress: '0x0987654321098765432109876543210987654321',
+          chainId: ChainId.mainnet,
+          currency: 'USD',
+          fromAddress: '0x1111111111111111111111111111111111111111',
+          sellAmount: '100',
+          sellTokenAddress: '0x1234567890123456789012345678901234567890',
+          slippage: 0.5,
+          swapSessionId: 'not-a-uuid',
+        })
+      ).rejects.toThrow('swapSessionId must be a valid UUID');
+    });
+
+    it('should send X-Swap-Session-Id header when swapSessionId is provided', async () => {
+      const swapSessionId = '550e8400-e29b-41d4-a716-446655440000';
+      const originalFetch = (global as any).fetch;
+      const fetchSpy = jest.fn().mockResolvedValue({
+        json: async () => ({ data: 'ok' }),
+      });
+      (global as any).fetch = fetchSpy;
+
+      await getQuote({
+        buyTokenAddress: '0x0987654321098765432109876543210987654321',
+        chainId: ChainId.mainnet,
+        currency: 'USD',
+        fromAddress: '0x1111111111111111111111111111111111111111',
+        sellAmount: '100',
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        slippage: 0.5,
+        swapSessionId,
+      });
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(fetchSpy.mock.calls[0][1]).toMatchObject({
+        headers: { 'X-Swap-Session-Id': swapSessionId },
+      });
+      (global as any).fetch = originalFetch;
+    });
   });
 });
