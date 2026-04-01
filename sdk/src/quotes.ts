@@ -110,12 +110,12 @@ const getRainbowRouterContractAddressV2 = (chainId: ChainId): Address => {
 };
 
 /**
-- * Function to get the rainbow router contract address based on the chainId and router version
-- *
-- * @param {ChainId} chainId
-- * @param {string} routerVersion
-- * @returns {Address}
-- */
+ * Function to get the rainbow router contract address based on chainId and routerVersion.
+ *
+ * @param {ChainId} chainId
+ * @param {'v1' | 'v2'} routerVersion
+ * @returns {Address}
+ */
 export const getRainbowRouterContractAddress = (
   chainId: ChainId,
   routerVersion: 'v1' | 'v2' = 'v1'
@@ -652,6 +652,25 @@ export const getQuoteExecutionDetails = (
   provider: StaticJsonRpcProvider
 ): QuoteExecutionDetails => {
   const isRouterV2 = quote.routerVersion === 'v2';
+
+  if (!isRouterV2 && quote.fallback) {
+    const { from, to, data, value } = quote;
+    if (!from || !to || !data || value === undefined) {
+      throw new Error('Fallback quote missing transaction fields for gas estimation');
+    }
+
+    return {
+      method: provider.estimateGas.bind(provider, { data, from, to, value }),
+      methodArgs: [],
+      methodName: 'estimateGas',
+      params: {
+        ...transactionOptions,
+        value,
+      },
+      router: new Contract(to, SwapRouter02ABI, provider),
+    };
+  }
+
   const instance = new Contract(
     getRainbowRouterContractAddress(quote.chainId, quote.routerVersion ?? 'v1'),
     isRouterV2 ? RainbowRouterV2ABI : RainbowRouterABI,

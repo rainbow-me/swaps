@@ -5,6 +5,7 @@ import RainbowRouterV2ABI from './abi/RainbowRouterV2.json';
 import {
   buildRainbowQuoteUrl,
   fillQuote,
+  getQuoteExecutionDetails,
   isAllowedTargetContract,
   prepareFillQuote,
 } from './quotes';
@@ -175,6 +176,42 @@ describe('Quotes', () => {
       await expect(
         fillQuote(invalidV2Quote, {}, mockWallet, false, ChainId.base)
       ).rejects.toThrow('Invalid swapId UUID for bytes16');
+    });
+  });
+
+  describe('getQuoteExecutionDetails', () => {
+    it('should use provider estimateGas for fallback v1 quotes', () => {
+      const provider = new StaticJsonRpcProvider('https://eth.llamarpc.com');
+      const estimateGasSpy = jest.spyOn(provider, 'estimateGas').mockResolvedValue({
+        toString: () => '21000',
+      } as any);
+
+      const fallbackQuote = {
+        buyTokenAddress: '0x0987654321098765432109876543210987654321',
+        chainId: ChainId.mainnet,
+        data: '0x1234',
+        fallback: true,
+        fee: '1',
+        feePercentageBasisPoints: 0,
+        from: '0x1111111111111111111111111111111111111111',
+        sellAmount: '100',
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        to: '0x2222222222222222222222222222222222222222',
+        value: '1',
+      } as unknown as Quote;
+
+      const details = getQuoteExecutionDetails(fallbackQuote, {}, provider);
+
+      expect(details.methodName).toBe('estimateGas');
+      expect(details.methodArgs).toEqual([]);
+      expect(estimateGasSpy).not.toHaveBeenCalled();
+      details.method(...details.methodArgs);
+      expect(estimateGasSpy).toHaveBeenCalledWith({
+        data: fallbackQuote.data,
+        from: fallbackQuote.from,
+        to: fallbackQuote.to,
+        value: fallbackQuote.value,
+      });
     });
   });
 
