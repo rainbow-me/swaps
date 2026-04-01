@@ -92,7 +92,8 @@ export interface QuoteParams {
   slippage: number;
   destReceiver?: Address;
   // Optional session id sent as X-Swap-Session-Id header in getQuote.
-  // Must be a valid UUID if provided.
+  //  * Must be a valid UUID if provided. 
+  //  * Must be unique for each quote request.
   swapSessionId?: string;
   refuel?: boolean;
   feePercentageBasisPoints?: number;
