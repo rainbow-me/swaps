@@ -1,21 +1,28 @@
-import { StaticJsonRpcProvider } from '@ethersproject/providers';
-import { Wallet } from '@ethersproject/wallet';
+import { createWalletClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { mainnet } from 'viem/chains';
 import {
   buildRainbowQuoteUrl,
   fillQuote,
   isAllowedTargetContract,
-} from './quotes';
-import { ChainId, Quote } from './types';
+} from './quotes.js';
+import { ChainId, Quote } from './types/index.js';
 import {
   AMM_CONTRACT_ADDRESSES,
   RAINBOW_ROUTER_CONTRACT_ADDRESS,
-} from './utils/constants';
+} from './utils/constants.js';
+
+const TEST_PRIVATE_KEY =
+  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 
 describe('Quotes', () => {
   describe('fillQuote', () => {
-    const mockWallet = Wallet.createRandom();
-    const provider = new StaticJsonRpcProvider('https://eth.llamarpc.com');
-    mockWallet.connect(provider);
+    const account = privateKeyToAccount(TEST_PRIVATE_KEY);
+    const walletClient = createWalletClient({
+      account,
+      chain: mainnet,
+      transport: http('https://eth.llamarpc.com'),
+    });
 
     it('should throw error if target contract is not allowed', async () => {
       const invalidQuote = {
@@ -26,7 +33,7 @@ describe('Quotes', () => {
 
       let error: Error | undefined;
       try {
-        await fillQuote(invalidQuote, {}, mockWallet, false, ChainId.mainnet);
+        await fillQuote(invalidQuote, {}, walletClient, false, ChainId.mainnet);
       } catch (e) {
         error = e as Error;
       }

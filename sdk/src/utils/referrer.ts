@@ -1,7 +1,5 @@
-import { keccak256 } from '@ethersproject/keccak256';
-import { toUtf8Bytes } from '@ethersproject/strings';
+import { keccak256, stringToHex } from 'viem';
 
 export function getReferrerCode(referrer: string): string {
-  // Skip 0x and concatenate after 8 characters
-  return keccak256(toUtf8Bytes(referrer)).substring(2, 10);
+  return keccak256(stringToHex(referrer)).substring(2, 10);
 }

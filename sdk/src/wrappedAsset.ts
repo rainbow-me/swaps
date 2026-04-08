@@ -1,87 +1,78 @@
-import { Signer } from '@ethersproject/abstract-signer';
-import { BigNumberish } from '@ethersproject/bignumber';
-import { Contract } from '@ethersproject/contracts';
-import { StaticJsonRpcProvider } from '@ethersproject/providers';
-import { Transaction } from '@ethersproject/transactions';
 import type { Address } from 'ox/Address';
-import { default as WethAbi } from './abi/Weth.json';
-import { Quote, SwapType, TransactionOptions } from './types';
+import type { Hash, PublicClient, WalletClient } from 'viem';
+import { encodeFunctionData } from 'viem';
+import { wethAbi } from './abi/abis.js';
+import type { BigIntish } from './types/index.js';
+import { Quote, SwapType, TransactionOptions } from './types/index.js';
 
-/**
- * Function to wrap a specific amount of the native asset
- * for the specified wallet from its ERC20 version
- * @param {BigNumberish} amount
- * @param {Signer} wallet
- * @param {Address} wrappedAssetAddress
- * @returns {Promise<Transaction>}
- */
+const requireAccount = (walletClient: WalletClient) => {
+  if (!walletClient.account) {
+    throw new Error('WalletClient must have an account attached');
+  }
+  return walletClient.account;
+};
+
 export const wrapNativeAsset = async (
-  amount: BigNumberish,
-  wallet: Signer,
+  amount: BigIntish,
+  walletClient: WalletClient,
   wrappedAssetAddress: Address,
-  transactionOptions: TransactionOptions = {}
-): Promise<Transaction> => {
-  const instance = new Contract(
-    wrappedAssetAddress,
-    JSON.stringify(WethAbi),
-    wallet
-  );
-
-  return instance.deposit({
-    ...transactionOptions,
-    value: amount,
+  _transactionOptions: TransactionOptions = {}
+): Promise<Hash> => {
+  const account = requireAccount(walletClient);
+  const data = encodeFunctionData({
+    abi: wethAbi,
+    functionName: 'deposit',
+  });
+  return walletClient.sendTransaction({
+    to: wrappedAssetAddress,
+    data,
+    value: BigInt(amount),
+    account,
+    chain: walletClient.chain,
   });
 };
 
-/**
- * Function to unwrap a specific amount of the native asset
- * for the specified wallet from its ERC20 version
- * @param {BigNumberish} amount
- * @param {Signer} wallet
- * @param {Address} wrappedAssetAddress
- * @returns {Promise<Transaction>}
- */
 export const unwrapNativeAsset = async (
-  amount: BigNumberish,
-  wallet: Signer,
+  amount: BigIntish,
+  walletClient: WalletClient,
   wrappedAssetAddress: Address,
-  transactionOptions: TransactionOptions = {}
-): Promise<Transaction> => {
-  const instance = new Contract(
-    wrappedAssetAddress,
-    JSON.stringify(WethAbi),
-    wallet
-  );
-
-  return instance.withdraw(amount, transactionOptions);
+  _transactionOptions: TransactionOptions = {}
+): Promise<Hash> => {
+  const account = requireAccount(walletClient);
+  const data = encodeFunctionData({
+    abi: wethAbi,
+    functionName: 'withdraw',
+    args: [BigInt(amount)],
+  });
+  return walletClient.sendTransaction({
+    to: wrappedAssetAddress,
+    data,
+    account,
+    chain: walletClient.chain,
+  });
 };
 
-/**
- * Function that returns a pointer to the smart contract
- * function that wraps or unwraps, to be used by estimateGas calls
- * @param {string} name
- * @param {StaticJsonRpcProvider} provider
- * @param {Address} wrappedAssetAddress
- * @returns {Promise<Transaction>}
- */
 export const getWrappedAssetMethod = (
-  name: string,
-  provider: StaticJsonRpcProvider,
+  functionName: 'deposit' | 'withdraw',
+  publicClient: PublicClient,
   wrappedAssetAddress: Address
-): any => {
-  const instance = new Contract(
-    wrappedAssetAddress,
-    JSON.stringify(WethAbi),
-    provider
-  );
-  return instance.estimateGas[name];
+) => {
+  return (params: { value?: bigint; args?: readonly unknown[] }) =>
+    functionName === 'deposit'
+      ? publicClient.estimateContractGas({
+          address: wrappedAssetAddress,
+          abi: wethAbi,
+          functionName: 'deposit',
+          value: params.value,
+        })
+      : publicClient.estimateContractGas({
+          address: wrappedAssetAddress,
+          abi: wethAbi,
+          functionName: 'withdraw',
+          args: (params.args ?? [0n]) as [bigint],
+        });
 };
 
-/**
- * Get the wrapped asset address from a quote on a wrap/unwrap
- * @param quote
- * @returns {Address}
- */
 export const getWrappedAssetAddress = (quote: Quote): Address => {
   switch (quote.swapType) {
     case SwapType.wrap:
